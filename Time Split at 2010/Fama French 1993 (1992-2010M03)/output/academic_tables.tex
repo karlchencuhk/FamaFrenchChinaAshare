@@ -1,0 +1,311 @@
+% ============================================================
+% Auto-generated LaTeX tables  —  Fama-French 1993 replication
+% ============================================================
+% Required packages (add to your document preamble):
+%   \usepackage{booktabs}
+%   \usepackage{threeparttable}
+%   \usepackage{caption}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 1: Summary statistics for the three Fama--French factors}
+\label{tab:factor_summary}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Factor & $N$ & Mean (\%) & Std (\%) & $t$(Mean) & Sharpe & AC(1) & Ann.\ Mean (\%) & Ann.\ Vol (\%) \\
+\midrule
+MKT\_RF & 213 & 0.966 & 13.478 & 1.109 & 0.072 & -0.023 & 11.587 & 46.690 \\
+SMB & 213 & 1.099$^{***}$ & 6.248 & 2.705 & 0.176 & -0.016 & 13.191 & 21.645 \\
+HML & 213 & 0.649 & 5.847 & 1.580 & 0.111 & -0.103 & 7.790 & 20.254 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item MKT\textunderscore RF is the value-weighted market excess return. SMB (small minus big) and HML (high minus low) are the Fama--French size and value factors constructed from Chinese A-share stocks.
+\item Newey--West (1987) $t$-statistics with 12 lags.
+\item $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 2: Pairwise correlations among the three factors}
+\label{tab:factor_corr}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrr}
+\toprule
+Factor & MKT-RF & SMB & HML \\
+\midrule
+MKT\_RF & 1.000 & 0.368 & -0.241 \\
+SMB & 0.368 & 1.000 & -0.128 \\
+HML & -0.241 & -0.128 & 1.000 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Pearson correlations computed over the full sample period.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 3: Summary statistics for the six $2\times3$ base portfolios used to construct SMB and HML}
+\label{tab:six_portfolios}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrrrr}
+\toprule
+Portfolio & $N$ & Avg Ret (\%) & Std (\%) & $t$(Mean) & Avg \#Stocks \\
+\midrule
+SL & 213 & 2.008$^{**}$ & 16.537 & 1.984 & 119.831 \\
+SM & 213 & 2.328$^{**}$ & 14.957 & 2.401 & 171.606 \\
+SH & 213 & 2.659$^{**}$ & 15.153 & 2.559 & 113.700 \\
+BL & 213 & 0.951 & 13.427 & 1.054 & 123.202 \\
+BM & 213 & 1.149 & 11.785 & 1.283 & 153.390 \\
+BH & 213 & 1.598 & 12.754 & 1.583 & 129.714 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Portfolios are the six $2\times3$ intersections of size (S = small, B = big) and book-to-market (L = low, M = medium, H = high).
+\item Newey--West (1987) $t$-statistics with 12 lags.
+\item $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 4: Average monthly excess returns (\%) for $5\times5$ size--book-to-market portfolios}
+\label{tab:25port_excess_returns}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrrrr}
+\toprule
+Size $\backslash$ BM & BM1 & BM2 & BM3 & BM4 & BM5 \\
+\midrule
+S1 & 2.840 & 2.025 & 2.254 & 3.407 & 2.906 \\
+S2 & 1.276 & 2.200 & 1.418 & 2.003 & 2.297 \\
+S3 & 1.041 & 1.100 & 1.459 & 1.796 & 1.756 \\
+S4 & 1.000 & 0.835 & 1.288 & 1.758 & 1.324 \\
+S5 & 0.634 & 1.054 & 0.952 & 1.195 & 1.123 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Portfolios are the 25 intersections of five size quintiles and five book-to-market quintiles, both sorted independently each June.
+\item S1 = smallest size; BM1 = lowest book-to-market.
+\item Reported values are time-series averages of monthly excess returns (\%).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[p{\textwidth}]
+\centering
+\caption{Table 5: Fama--French three-factor time-series regressions for 25 size--BM portfolios}
+\label{tab:ff3_regressions}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrrrrr}
+\toprule
+Portfolio & $\alpha$ (\%) & $b_{\mathrm{MKT}}$ & $b_{\mathrm{SMB}}$ & $b_{\mathrm{HML}}$ & $R^2$ & $N$ \\
+\midrule
+S1B1 & 0.504 & 1.0921$^{***}$ & 1.1669$^{***}$ & -0.4845$^{***}$ & 0.956 & 189 \\
+{{\footnotesize}} & {\footnotesize (1.633)} & {\footnotesize (24.686)} & {\footnotesize (9.646)} & {\footnotesize (-4.791)} & & \\
+\addlinespace[0.2em]
+S1B2 & 0.383 & 0.9316$^{***}$ & 0.9097$^{***}$ & -0.2846$^{***}$ & 0.922 & 201 \\
+{{\footnotesize}} & {\footnotesize (1.505)} & {\footnotesize (25.246)} & {\footnotesize (5.918)} & {\footnotesize (-3.034)} & & \\
+\addlinespace[0.2em]
+S1B3 & 0.126 & 0.8511$^{***}$ & 1.0698$^{***}$ & 0.1993$^{*}$ & 0.920 & 213 \\
+{{\footnotesize}} & {\footnotesize (0.402)} & {\footnotesize (16.164)} & {\footnotesize (18.417)} & {\footnotesize (1.938)} & & \\
+\addlinespace[0.2em]
+S1B4 & 1.137$^{**}$ & 0.8918$^{***}$ & 1.0940$^{***}$ & 0.3168$^{**}$ & 0.887 & 213 \\
+{{\footnotesize}} & {\footnotesize (2.157)} & {\footnotesize (13.814)} & {\footnotesize (14.477)} & {\footnotesize (2.471)} & & \\
+\addlinespace[0.2em]
+S1B5 & 0.481 & 0.9062$^{***}$ & 1.1002$^{***}$ & 0.5245$^{***}$ & 0.919 & 213 \\
+{{\footnotesize}} & {\footnotesize (1.137)} & {\footnotesize (23.059)} & {\footnotesize (21.786)} & {\footnotesize (9.865)} & & \\
+\addlinespace[0.2em]
+\midrule
+S2B1 & -0.131 & 0.9192$^{***}$ & 0.8763$^{***}$ & -0.5668$^{***}$ & 0.941 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.566)} & {\footnotesize (32.361)} & {\footnotesize (7.970)} & {\footnotesize (-6.115)} & & \\
+\addlinespace[0.2em]
+S2B2 & 0.697$^{*}$ & 0.9282$^{***}$ & 0.6814$^{***}$ & -0.2200 & 0.893 & 213 \\
+{{\footnotesize}} & {\footnotesize (1.891)} & {\footnotesize (24.524)} & {\footnotesize (5.137)} & {\footnotesize (-1.457)} & & \\
+\addlinespace[0.2em]
+S2B3 & -0.249 & 0.8179$^{***}$ & 0.7607$^{***}$ & 0.1502 & 0.927 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.889)} & {\footnotesize (16.080)} & {\footnotesize (6.501)} & {\footnotesize (1.149)} & & \\
+\addlinespace[0.2em]
+S2B4 & -0.076 & 0.9896$^{***}$ & 0.9054$^{***}$ & 0.2983$^{***}$ & 0.956 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.361)} & {\footnotesize (38.715)} & {\footnotesize (14.463)} & {\footnotesize (2.965)} & & \\
+\addlinespace[0.2em]
+S2B5 & 0.275 & 1.0007$^{***}$ & 0.5545$^{**}$ & 0.6871$^{***}$ & 0.865 & 213 \\
+{{\footnotesize}} & {\footnotesize (0.822)} & {\footnotesize (9.930)} & {\footnotesize (2.339)} & {\footnotesize (3.161)} & & \\
+\addlinespace[0.2em]
+\midrule
+S3B1 & -0.310 & 0.9521$^{***}$ & 0.7016$^{***}$ & -0.5230$^{***}$ & 0.934 & 213 \\
+{{\footnotesize}} & {\footnotesize (-1.329)} & {\footnotesize (18.768)} & {\footnotesize (5.186)} & {\footnotesize (-4.850)} & & \\
+\addlinespace[0.2em]
+S3B2 & -0.239 & 0.9223$^{***}$ & 0.6232$^{***}$ & -0.2802$^{***}$ & 0.937 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.867)} & {\footnotesize (40.766)} & {\footnotesize (5.709)} & {\footnotesize (-2.763)} & & \\
+\addlinespace[0.2em]
+S3B3 & -0.012 & 0.9937$^{***}$ & 0.5068$^{***}$ & -0.0026 & 0.914 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.041)} & {\footnotesize (27.235)} & {\footnotesize (3.172)} & {\footnotesize (-0.024)} & & \\
+\addlinespace[0.2em]
+S3B4 & 0.183 & 0.8922$^{***}$ & 0.3741$^{*}$ & 0.5235$^{***}$ & 0.839 & 213 \\
+{{\footnotesize}} & {\footnotesize (0.521)} & {\footnotesize (15.940)} & {\footnotesize (1.670)} & {\footnotesize (2.846)} & & \\
+\addlinespace[0.2em]
+S3B5 & -0.334$^{*}$ & 1.0338$^{***}$ & 0.7291$^{***}$ & 0.5241$^{***}$ & 0.940 & 201 \\
+{{\footnotesize}} & {\footnotesize (-1.728)} & {\footnotesize (45.790)} & {\footnotesize (7.237)} & {\footnotesize (4.821)} & & \\
+\addlinespace[0.2em]
+\midrule
+S4B1 & 0.102 & 1.0178$^{***}$ & 0.0263 & -0.1743 & 0.785 & 213 \\
+{{\footnotesize}} & {\footnotesize (0.312)} & {\footnotesize (7.251)} & {\footnotesize (0.083)} & {\footnotesize (-0.638)} & & \\
+\addlinespace[0.2em]
+S4B2 & -0.240 & 0.8080$^{***}$ & 0.3419$^{**}$ & -0.0753 & 0.857 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.783)} & {\footnotesize (12.142)} & {\footnotesize (2.468)} & {\footnotesize (-0.593)} & & \\
+\addlinespace[0.2em]
+S4B3 & 0.048 & 0.8530$^{***}$ & 0.6779$^{***}$ & -0.5067 & 0.776 & 213 \\
+{{\footnotesize}} & {\footnotesize (0.098)} & {\footnotesize (6.867)} & {\footnotesize (2.761)} & {\footnotesize (-1.419)} & & \\
+\addlinespace[0.2em]
+S4B4 & -0.190 & 0.8709$^{***}$ & 0.4321$^{***}$ & 0.3724$^{**}$ & 0.899 & 189 \\
+{{\footnotesize}} & {\footnotesize (-0.704)} & {\footnotesize (15.343)} & {\footnotesize (3.339)} & {\footnotesize (2.394)} & & \\
+\addlinespace[0.2em]
+S4B5 & -0.251 & 0.9170$^{***}$ & 0.3742$^{***}$ & 0.4705$^{***}$ & 0.894 & 201 \\
+{{\footnotesize}} & {\footnotesize (-1.030)} & {\footnotesize (21.312)} & {\footnotesize (2.880)} & {\footnotesize (8.544)} & & \\
+\addlinespace[0.2em]
+\midrule
+S5B1 & 0.112 & 1.0972$^{***}$ & 0.0035 & -0.7973$^{***}$ & 0.948 & 201 \\
+{{\footnotesize}} & {\footnotesize (0.396)} & {\footnotesize (27.352)} & {\footnotesize (0.049)} & {\footnotesize (-6.103)} & & \\
+\addlinespace[0.2em]
+S5B2 & 0.160 & 0.8833$^{***}$ & -0.4942$^{***}$ & 0.1292$^{*}$ & 0.876 & 201 \\
+{{\footnotesize}} & {\footnotesize (0.529)} & {\footnotesize (21.136)} & {\footnotesize (-4.119)} & {\footnotesize (1.954)} & & \\
+\addlinespace[0.2em]
+S5B3 & 0.456 & 0.9467$^{***}$ & -0.4506$^{***}$ & 0.1184 & 0.856 & 213 \\
+{{\footnotesize}} & {\footnotesize (1.151)} & {\footnotesize (18.493)} & {\footnotesize (-3.390)} & {\footnotesize (1.020)} & & \\
+\addlinespace[0.2em]
+S5B4 & 0.427 & 0.9751$^{***}$ & -0.2070$^{*}$ & 0.0769 & 0.881 & 201 \\
+{{\footnotesize}} & {\footnotesize (1.075)} & {\footnotesize (38.612)} & {\footnotesize (-1.893)} & {\footnotesize (0.594)} & & \\
+\addlinespace[0.2em]
+S5B5 & -0.009 & 1.0097$^{***}$ & -0.2226$^{**}$ & 0.5993$^{***}$ & 0.923 & 201 \\
+{{\footnotesize}} & {\footnotesize (-0.036)} & {\footnotesize (36.670)} & {\footnotesize (-2.280)} & {\footnotesize (7.268)} & & \\
+\addlinespace[0.2em]
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Time-series regressions: $R_{it} - R_{ft} = \alpha_i + b_i(R_{mt}-R_{ft}) + s_i\,\mathrm{SMB}_t + h_i\,\mathrm{HML}_t + \varepsilon_{it}$.
+\item Portfolios are the 25 $5\times5$ size--BM intersections. S1 = smallest size; B1 = lowest book-to-market.
+\item Newey--West (1987) $t$-statistics with 12 lags in parentheses.
+\item $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 6: Alpha diagnostics for the FF3 model across 25 test portfolios}
+\label{tab:alpha_diagnostics}
+\small
+\begin{threeparttable}
+\begin{tabular}{lr}
+\toprule
+Metric & Value \\
+\midrule
+n\_portfolios & 25.000 \\
+mean\_alpha\_pct & 0.122 \\
+mean\_abs\_alpha\_pct & 0.285 \\
+max\_abs\_alpha\_pct & 1.137 \\
+n\_sig\_10pct & 3.000 \\
+n\_sig\_5pct & 1.000 \\
+n\_sig\_1pct & 0.000 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Diagnostics are computed across the 25 size--BM test portfolios.
+\item RMSE and MAE are in percentage points per month.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 7: Pricing errors --- actual vs.\ FF3-fitted average excess returns for 25 portfolios}
+\label{tab:pricing_errors}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrr}
+\toprule
+Portfolio & Actual (\%) & Fitted (\%) & Error (\%) \\
+\midrule
+S1B1 & 2.840 & 2.023 & 0.817 \\
+S1B2 & 2.025 & 1.715 & 0.310 \\
+S1B3 & 2.254 & 2.127 & 0.126 \\
+S1B4 & 3.407 & 2.269 & 1.137 \\
+S1B5 & 2.906 & 2.425 & 0.481 \\
+\midrule
+S2B1 & 1.276 & 1.483 & -0.206 \\
+S2B2 & 2.200 & 1.502 & 0.697 \\
+S2B3 & 1.418 & 1.724 & -0.306 \\
+S2B4 & 2.003 & 2.145 & -0.142 \\
+S2B5 & 2.297 & 2.022 & 0.275 \\
+\midrule
+S3B1 & 1.041 & 1.351 & -0.310 \\
+S3B2 & 1.100 & 1.394 & -0.293 \\
+S3B3 & 1.459 & 1.515 & -0.056 \\
+S3B4 & 1.796 & 1.613 & 0.183 \\
+S3B5 & 1.756 & 2.140 & -0.384 \\
+\midrule
+S4B1 & 1.000 & 0.899 & 0.102 \\
+S4B2 & 0.835 & 1.107 & -0.272 \\
+S4B3 & 1.288 & 1.240 & 0.048 \\
+S4B4 & 1.758 & 1.558 & 0.200 \\
+S4B5 & 1.324 & 1.602 & -0.279 \\
+\midrule
+S5B1 & 0.634 & 0.546 & 0.088 \\
+S5B2 & 1.054 & 0.394 & 0.661 \\
+S5B3 & 0.952 & 0.496 & 0.456 \\
+S5B4 & 1.195 & 0.764 & 0.431 \\
+S5B5 & 1.123 & 1.119 & 0.004 \\
+\midrule
+Summary &  &  &  \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Actual = time-series average monthly excess return.
+\item Fitted = FF3 model-predicted average excess return.
+\item Error = Actual $-$ Fitted.
+\item Portfolios are grouped by size quintile; horizontal rules separate quintiles.
+\item Cross-portfolio RMSE = 0.421\%, MAE = 0.331\%.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Table 8: Statistical significance of factor risk premia}
+\label{tab:factor_premia}
+\small
+\begin{threeparttable}
+\begin{tabular}{lrrcr}
+\toprule
+Factor & Mean (\%) & $t$-stat & Sig. & $N$ \\
+\midrule
+MKT\_RF & 0.966 & 1.109 & --- & 213 \\
+SMB & 1.099$^{***}$ & 2.705 & *** & 213 \\
+HML & 0.649 & 1.580 & --- & 213 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Newey--West (1987) $t$-statistics with 12 lags.
+\item $^{*}p<0.10$, $^{**}p<0.05$, $^{***}p<0.01$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

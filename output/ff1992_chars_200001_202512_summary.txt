@@ -1,0 +1,11 @@
+FF1992 characteristics build summary
+period: 2000-01 to 2025-12
+universe: SSE & SZSE A-share only (Markettype 1,4)
+statement type: Typrep=A only
+beta: rolling 60 months OLS with intercept, min obs=24
+BE/ME lag: July t to June t+1 uses BE from fiscal year t-1
+RF conversion: effective monthly from annualized rate: (1+r)^1/12 - 1
+rows_written: 646457
+beta_non_missing: 580403
+beme_non_missing: 619466
+rf_non_missing_cells: 645134

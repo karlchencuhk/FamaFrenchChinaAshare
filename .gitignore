@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+.venv-1/
+venv/
+env/
+
+# Large intermediate pipeline output files (regenerable by running scripts)
+# master_panel files (100-112 MB each)
+**/output/master_panel_*.csv
+# membership files (20-70 MB each)
+**/output/membership_jul_to_jun.csv
+**/output/dt_membership_with_betas.csv
+**/output/preformation_betas.csv
+
+# Root-level large output
+output/ff1992_chars_*.csv

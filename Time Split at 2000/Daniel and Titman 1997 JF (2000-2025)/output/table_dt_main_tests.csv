@@ -1,0 +1,17 @@
+test_family,contrast,group,mean_monthly_pct,n_months,nw12_tstat,signif
+Size characteristic held fixed,High beta_SMB - Low beta_SMB,Size tercile 1,0.16717095678086938,282,0.9841910296228175,
+Size characteristic held fixed,High beta_SMB - Low beta_SMB,Size tercile 2,-0.21551923176437524,282,-1.7686135682659303,*
+Size characteristic held fixed,High beta_SMB - Low beta_SMB,Size tercile 3,-0.5934644634155896,282,-2.361587953955647,**
+Size characteristic held fixed,High beta_SMB - Low beta_SMB,Pooled across size terciles,-0.21393757946636524,282,-1.6020245104923225,
+beta_SMB loading held fixed,Small size - Big size,beta_SMB bin 1,0.616387007136331,282,1.5437273926589707,
+beta_SMB loading held fixed,Small size - Big size,beta_SMB bin 2,0.8088991391564713,282,2.4520668553740106,**
+beta_SMB loading held fixed,Small size - Big size,beta_SMB bin 3,1.377022427332791,282,4.3874718684880305,***
+beta_SMB loading held fixed,Small size - Big size,Pooled across beta_SMB bins,0.9341028578751974,282,2.8698735961418067,***
+BM characteristic held fixed,High beta_HML - Low beta_HML,BM tercile 1,-0.19074692349823807,282,-0.8755955815428186,
+BM characteristic held fixed,High beta_HML - Low beta_HML,BM tercile 2,-0.11159273235724543,282,-0.5837354979614082,
+BM characteristic held fixed,High beta_HML - Low beta_HML,BM tercile 3,-0.01309767150634474,282,-0.06683863924693459,
+BM characteristic held fixed,High beta_HML - Low beta_HML,Pooled across BM terciles,-0.10514577578727602,282,-0.6953744185161741,
+beta_HML loading held fixed,High BM - Low BM,beta_HML bin 1,0.16669938392648243,282,0.6700863317136359,
+beta_HML loading held fixed,High BM - Low BM,beta_HML bin 2,0.33826555691784704,282,1.3277404802179296,
+beta_HML loading held fixed,High BM - Low BM,beta_HML bin 3,0.34434863591837556,282,1.087760313320162,
+beta_HML loading held fixed,High BM - Low BM,Pooled across beta_HML bins,0.2831045255875685,282,1.210716450824317,
