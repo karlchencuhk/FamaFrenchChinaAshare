@@ -336,11 +336,12 @@ def table_iv_tex():
         dec = r['portfolio'].replace('M', '')
         body.append([dec,
                      f3(r['avg_monthly_return_pct']),
+                     f4(r.get('post_ranking_beta', '')),
                      f4(r.get('avg_ln_me', '')),
                      f4(r.get('avg_ln_be_me', ''))])
 
-    tab = tabular_booktabs('crrr',
-                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', '$\\ln(ME)$', '$\\ln(BE/ME)$'],
+    tab = tabular_booktabs('crrrr',
+                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', 'Post-$\\beta$', '$\\ln(ME)$', '$\\ln(BE/ME)$'],
                            body)
     notes = [
         'Portfolios are formed in June of each year by sorting all stocks into '
