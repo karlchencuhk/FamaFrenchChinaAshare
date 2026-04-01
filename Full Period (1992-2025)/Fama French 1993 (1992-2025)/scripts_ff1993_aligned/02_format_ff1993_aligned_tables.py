@@ -52,9 +52,27 @@ def main():
     lines += ['## Table 6a (FF1993-aligned): Stock Regressions on MKT_RF, SMB, HML',
               markdown_table(['Portfolio', 'Alpha %', 't(alpha)', 'b_mkt', 's_smb', 'h_hml', 'R2'], rows6), '']
 
-    rows9a = [[r['portfolio'], f3(r['alpha_pct']), f3(r['nw12_t_alpha']), f3(r['abs_alpha_pct'])] for r in t9a]
-    lines += ['## Table 9a (Analogue): Alpha by Portfolio',
-              markdown_table(['Portfolio', 'Alpha %', 't(alpha)', 'Abs Alpha %'], rows9a), '']
+    grid_alpha = {}
+    grid_t = {}
+    for r in t9a:
+        p = r['portfolio']
+        # portfolio format is S{i}B{j}
+        s_part, b_part = p.split('B')
+        s = int(s_part.replace('S', ''))
+        b = int(b_part)
+        grid_alpha[(s, b)] = f3(r['alpha_pct'])
+        grid_t[(s, b)] = f3(r['nw12_t_alpha'])
+
+    rows9a_alpha = [[f'S{i}'] + [grid_alpha.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+    rows9a_t = [[f'S{i}'] + [grid_t.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+
+    lines += ['## Table 9a (Analogue): Alpha Grids by Size and BE/ME',
+              '### Panel A: Alpha (%)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows9a_alpha),
+              '',
+              '### Panel B: t(alpha)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows9a_t),
+              '']
 
     rows9c = [[r['metric'], r['value']] for r in t9c]
     lines += ['## Table 9c (Analogue): Joint Alpha Diagnostics',
