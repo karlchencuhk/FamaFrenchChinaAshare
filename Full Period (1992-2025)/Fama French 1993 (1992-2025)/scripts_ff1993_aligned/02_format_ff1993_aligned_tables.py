@@ -54,7 +54,7 @@ def main():
 
     rows9a = [[r['portfolio'], f3(r['alpha_pct']), f3(r['nw12_t_alpha']), f3(r['abs_alpha_pct'])] for r in t9a]
     lines += ['## Table 9a (Analogue): Alpha by Portfolio',
-              markdown_table(['Portfolio', 'Alpha %', 't(alpha)', '|Alpha| %'], rows9a), '']
+              markdown_table(['Portfolio', 'Alpha %', 't(alpha)', 'Abs Alpha %'], rows9a), '']
 
     rows9c = [[r['metric'], r['value']] for r in t9c]
     lines += ['## Table 9c (Analogue): Joint Alpha Diagnostics',
