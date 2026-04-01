@@ -49,7 +49,27 @@
 | S5B5 | 0.054 | 0.397 | 0.9885 | -0.2183 | 0.6410 | 0.926 |
 
 ## Table 9a (Analogue): Alpha Grids by Size and BE/ME
-### Panel A: Alpha (%)
+### CAPM only
+#### Panel A: Alpha (%)
+| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
+| --- | --- | --- | --- | --- | --- |
+| S1 | 0.792 | 1.058 | 1.312 | 1.876 | 1.514 |
+| S2 | 0.208 | 0.858 | 0.670 | 0.818 | 0.933 |
+| S3 | 0.041 | 0.153 | 0.436 | 0.569 | 0.585 |
+| S4 | -0.020 | 0.107 | 0.243 | 0.235 | 0.341 |
+| S5 | -0.273 | -0.026 | -0.030 | 0.084 | 0.194 |
+
+#### Panel B: t(alpha)
+| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
+| --- | --- | --- | --- | --- | --- |
+| S1 | 2.280 | 3.170 | 3.841 | 4.006 | 4.200 |
+| S2 | 0.694 | 2.678 | 2.609 | 3.313 | 3.796 |
+| S3 | 0.137 | 0.655 | 2.057 | 2.488 | 2.843 |
+| S4 | -0.088 | 0.558 | 1.336 | 1.332 | 1.846 |
+| S5 | -1.118 | -0.125 | -0.163 | 0.438 | 0.730 |
+
+### 3-factor model
+#### Panel A: Alpha (%)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
 | S1 | 0.251 | 0.462 | 0.431 | 0.920 | 0.466 |
@@ -58,7 +78,7 @@
 | S4 | 0.016 | -0.096 | 0.010 | -0.176 | -0.161 |
 | S5 | 0.174 | 0.247 | 0.209 | 0.186 | 0.054 |
 
-### Panel B: t(alpha)
+#### Panel B: t(alpha)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
 | S1 | 1.367 | 2.849 | 2.348 | 3.126 | 2.001 |
@@ -67,18 +87,16 @@
 | S4 | 0.084 | -0.544 | 0.042 | -1.077 | -1.155 |
 | S5 | 1.011 | 1.346 | 0.933 | 0.824 | 0.397 |
 
-## Table 9c (Analogue): Joint Alpha Diagnostics
+## Table 9c (Analogue, CAPM only): Alpha Diagnostics
 | Metric | Value |
 | --- | --- |
+| model | CAPM-only |
 | n_portfolios | 25 |
-| n_sig_10pct | 5 |
-| n_sig_5pct | 4 |
-| n_sig_1pct | 2 |
-| mean_alpha_pct | 0.11668214255928065 |
-| mean_abs_alpha_pct | 0.21149202853060042 |
-| max_abs_alpha_pct | 0.9199438363510105 |
-| rmse_pct | 0.30646557808496927 |
-| mae_pct | 0.22333558409137344 |
-| joint_test_note | GRS not implemented; diagnostics shown as FF1993 Table 9 analogue. |
+| n_sig_10pct | 13 |
+| n_sig_5pct | 12 |
+| n_sig_1pct | 9 |
+| mean_alpha_pct | 0.5070457062262856 |
+| mean_abs_alpha_pct | 0.5349361106390925 |
+| max_abs_alpha_pct | 1.8761385955341892 |
 
 \end{verbatim}

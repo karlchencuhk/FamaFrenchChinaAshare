@@ -1,0 +1,9 @@
+metric,value
+model,CAPM-only
+n_portfolios,25
+n_sig_10pct,13
+n_sig_5pct,12
+n_sig_1pct,9
+mean_alpha_pct,0.5070457062262856
+mean_abs_alpha_pct,0.5349361106390925
+max_abs_alpha_pct,1.8761385955341892

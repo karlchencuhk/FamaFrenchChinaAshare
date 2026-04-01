@@ -34,8 +34,9 @@ def main():
     t1 = read_csv(cfg.OUT_DIR / 'table_1_ff1993_size_bm_5x5.csv')
     t2 = read_csv(cfg.OUT_DIR / 'table_2_ff1993_factor_summary.csv')
     t6 = read_csv(cfg.OUT_DIR / 'table_6a_ff1993_stock_regressions.csv')
-    t9a = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_alpha_by_portfolio.csv')
-    t9c = read_csv(cfg.OUT_DIR / 'table_9c_ff1993_alpha_diagnostics.csv')
+    t9a_capm = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_capm_only_by_portfolio.csv')
+    t9a_ff3 = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_alpha_by_portfolio.csv')
+    t9c = read_csv(cfg.OUT_DIR / 'table_9c_ff1993_capm_only_diagnostics.csv')
 
     lines = ['# FF1993-Aligned Tables (Full Period, Stock-side focus)', '']
 
@@ -52,30 +53,41 @@ def main():
     lines += ['## Table 6a (FF1993-aligned): Stock Regressions on MKT_RF, SMB, HML',
               markdown_table(['Portfolio', 'Alpha %', 't(alpha)', 'b_mkt', 's_smb', 'h_hml', 'R2'], rows6), '']
 
-    grid_alpha = {}
-    grid_t = {}
-    for r in t9a:
-        p = r['portfolio']
-        # portfolio format is S{i}B{j}
-        s_part, b_part = p.split('B')
-        s = int(s_part.replace('S', ''))
-        b = int(b_part)
-        grid_alpha[(s, b)] = f3(r['alpha_pct'])
-        grid_t[(s, b)] = f3(r['nw12_t_alpha'])
+    def make_alpha_grids(rows):
+        grid_alpha = {}
+        grid_t = {}
+        for r in rows:
+            p = r['portfolio']
+            s_part, b_part = p.split('B')
+            s = int(s_part.replace('S', ''))
+            b = int(b_part)
+            grid_alpha[(s, b)] = f3(r['alpha_pct'])
+            grid_t[(s, b)] = f3(r['nw12_t_alpha'])
+        rows_alpha = [[f'S{i}'] + [grid_alpha.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+        rows_t = [[f'S{i}'] + [grid_t.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+        return rows_alpha, rows_t
 
-    rows9a_alpha = [[f'S{i}'] + [grid_alpha.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
-    rows9a_t = [[f'S{i}'] + [grid_t.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+    capm_alpha, capm_t = make_alpha_grids(t9a_capm)
+    ff3_alpha, ff3_t = make_alpha_grids(t9a_ff3)
 
     lines += ['## Table 9a (Analogue): Alpha Grids by Size and BE/ME',
-              '### Panel A: Alpha (%)',
-              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows9a_alpha),
+              '### CAPM only',
+              '#### Panel A: Alpha (%)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], capm_alpha),
               '',
-              '### Panel B: t(alpha)',
-              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows9a_t),
+              '#### Panel B: t(alpha)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], capm_t),
+              '',
+              '### 3-factor model',
+              '#### Panel A: Alpha (%)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], ff3_alpha),
+              '',
+              '#### Panel B: t(alpha)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], ff3_t),
               '']
 
     rows9c = [[r['metric'], r['value']] for r in t9c]
-    lines += ['## Table 9c (Analogue): Joint Alpha Diagnostics',
+    lines += ['## Table 9c (Analogue, CAPM only): Alpha Diagnostics',
               markdown_table(['Metric', 'Value'], rows9c), '']
 
     md = '\n'.join(lines)
