@@ -336,19 +336,20 @@ def table_iv_tex():
         dec = r['portfolio'].replace('M', '')
         body.append([dec,
                      f3(r['avg_monthly_return_pct']),
-                     f(float(r['avg_size']) / 1_000, 1)])
+                     f4(r.get('avg_ln_me', '')),
+                     f4(r.get('avg_ln_be_me', ''))])
 
-    tab = tabular_booktabs('crr',
-                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', 'Avg ME (RMB M)'],
+    tab = tabular_booktabs('crrr',
+                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', '$\\ln(ME)$', '$\\ln(BE/ME)$'],
                            body)
     notes = [
         'Portfolios are formed in June of each year by sorting all stocks into '
         '10 equal groups on book-to-market equity (BE/ME).',
         'Decile 1 (M1) has the lowest BE/ME; decile 10 has the highest.',
-        'Average market equity (ME) is in RMB millions.',
+        '$\\ln(ME)$ and $\\ln(BE/ME)$ are portfolio averages of firm-level June characteristics used in monthly memberships.',
     ]
     return wrap_table(
-        caption='Table IV: Returns for portfolios formed on BE/ME alone',
+        caption='Table IV: Characteristics of portfolios formed on BE/ME alone',
         label='tab:beme_univariate',
         size_cmd='\\small',
         tabular_lines=tab,

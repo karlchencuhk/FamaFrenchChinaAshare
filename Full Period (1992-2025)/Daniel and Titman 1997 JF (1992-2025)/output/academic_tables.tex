@@ -33,3 +33,25 @@ beta\_HML loading held fixed & High BM - Low BM & Pooled across beta\_HML bins &
 \end{minipage}
 \end{table}
 
+\begin{table}[htbp]
+\centering
+\caption{Fama--MacBeth cross-sectional regressions with characteristics and loadings (1992--2025)}
+\label{tab:dt_fm_chars_loadings}
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+Model & Coefficient & Avg slope & $t_{NW12}$ & Sig & $N_{months}$ & Avg $N$ \\
+\midrule
+DT\_FM\_chars\_and\_loadings & intercept & 0.068 & 2.705 & *** & 378 & 1479.442 \\
+DT\_FM\_chars\_and\_loadings & ln\_size & -0.005 & -3.695 & *** & 378 & 1479.442 \\
+DT\_FM\_chars\_and\_loadings & ln\_be\_me & 0.004 & 2.243 & ** & 378 & 1479.442 \\
+DT\_FM\_chars\_and\_loadings & beta\_smb & -0.000 & -0.196 &  & 378 & 1479.442 \\
+DT\_FM\_chars\_and\_loadings & beta\_hml & 0.000 & 0.448 &  & 378 & 1479.442 \\
+\bottomrule
+\end{tabular}
+\vspace{0.4em}
+\begin{minipage}{0.92\linewidth}
+\footnotesize Monthly cross-sections regress stock excess returns on $\ln(Size)$, $\ln(BE/ME)$, pre-formation $\beta^{SMB}$ and pre-formation $\beta^{HML}$. Reported estimates are time-series means of monthly slopes; $t$-statistics are Newey--West with 12 lags.
+\end{minipage}
+\end{table}
+

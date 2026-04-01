@@ -1,0 +1,8 @@
+metric,value
+n_portfolios,25
+mean_alpha_pct,0.10097480948988795
+mean_abs_alpha_pct,0.15567401215304974
+max_abs_alpha_pct,0.5432350008026702
+n_sig_10pct,7
+n_sig_5pct,6
+n_sig_1pct,4

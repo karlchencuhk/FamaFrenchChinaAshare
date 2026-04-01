@@ -23,3 +23,16 @@
 Interpretation guide:
 - Characteristics view (Daniel-Titman): significant characteristic spreads when loadings are held fixed, and weak loading spreads when characteristics are held fixed.
 - Risk-loading view (Fama-French): significant loading spreads when characteristics are held fixed.
+
+## Table 2. Fama-MacBeth Regressions: Characteristics and Loadings Together
+| Model | Coefficient | Avg slope | NW12 t | Sig | N months | Avg N stocks |
+| --- | --- | --- | --- | --- | --- | --- |
+| DT_FM_chars_and_loadings | intercept | 0.068 | 2.705 | *** | 378 | 1479.442 |
+| DT_FM_chars_and_loadings | ln_size | -0.005 | -3.695 | *** | 378 | 1479.442 |
+| DT_FM_chars_and_loadings | ln_be_me | 0.004 | 2.243 | ** | 378 | 1479.442 |
+| DT_FM_chars_and_loadings | beta_smb | -0.000 | -0.196 |  | 378 | 1479.442 |
+| DT_FM_chars_and_loadings | beta_hml | 0.000 | 0.448 |  | 378 | 1479.442 |
+
+Cross-sectional regression each month:
+- $R_{i,t}^{e}=\gamma_{0,t}+\gamma_{1,t}\ln(Size_{i,t-1})+\gamma_{2,t}\ln(BE/ME_{i,t-1})+\gamma_{3,t}eta^{SMB}_{i,t-1}+\gamma_{4,t}eta^{HML}_{i,t-1}+arepsilon_{i,t}$
+- Reported slopes are time-series means of $\gamma_{k,t}$ with Newey-West (12) $t$-statistics.

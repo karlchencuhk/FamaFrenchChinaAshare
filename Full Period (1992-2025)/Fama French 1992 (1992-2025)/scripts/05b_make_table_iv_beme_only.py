@@ -21,6 +21,7 @@ def main():
 
     members = defaultdict(list)  # (month, portfolio) -> stocks
     avg_size_acc = defaultdict(list)
+    char_acc = defaultdict(lambda: {'ln_size': [], 'ln_be_me': []})
 
     with open(cfg.OUTPUT_DIR / 'membership_jul_to_jun.csv', newline='', encoding='utf-8') as f:
         r = csv.DictReader(f)
@@ -35,6 +36,13 @@ def main():
             s = to_float(row.get('size'))
             if s is not None and s > 0:
                 avg_size_acc[p].append(s)
+
+            ln_size = to_float(row.get('ln_size'))
+            ln_be_me = to_float(row.get('ln_be_me'))
+            if ln_size is not None:
+                char_acc[p]['ln_size'].append(ln_size)
+            if ln_be_me is not None:
+                char_acc[p]['ln_be_me'].append(ln_be_me)
 
     ret_ts = defaultdict(dict)
     months = sorted({m for m, _ in members.keys()}, key=cfg.month_to_int)
@@ -67,17 +75,34 @@ def main():
     out_file = cfg.OUTPUT_DIR / 'table_iv_beme_only.csv'
     with open(out_file, 'w', newline='', encoding='utf-8') as f:
         w = csv.writer(f)
-        w.writerow(['portfolio', 'avg_monthly_return_pct', 'avg_size'])
+        w.writerow([
+            'portfolio',
+            'avg_monthly_return_pct',
+            'avg_ln_me',
+            'avg_ln_be_me',
+            'avg_size',
+        ])
         for p in [f'M{i}' for i in range(1, 11)]:
             ts = ret_ts.get(p, {})
             avg_ret = ''
             if ts:
                 avg_ret = f"{100.0 * (sum(ts.values()) / len(ts)):.3f}"
+
+            avg_ln_me = ''
+            ln_me_vals = char_acc[p]['ln_size']
+            if ln_me_vals:
+                avg_ln_me = f"{sum(ln_me_vals) / len(ln_me_vals):.4f}"
+
+            avg_ln_be_me = ''
+            ln_beme_vals = char_acc[p]['ln_be_me']
+            if ln_beme_vals:
+                avg_ln_be_me = f"{sum(ln_beme_vals) / len(ln_beme_vals):.4f}"
+
             avg_size = ''
             vals = avg_size_acc.get(p, [])
             if vals:
                 avg_size = f"{sum(vals)/len(vals):.2f}"
-            w.writerow([p, avg_ret, avg_size])
+            w.writerow([p, avg_ret, avg_ln_me, avg_ln_be_me, avg_size])
 
     print('Done:', out_file)
 

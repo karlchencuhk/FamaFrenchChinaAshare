@@ -1,0 +1,107 @@
+{
+  "fs_schema": {
+    "Stkcd": "Stkcd",
+    "Typrep": "Typrep",
+    "Accper": "Accper",
+    "E_numerator_candidate_B002000101": "B002000101",
+    "columns_count": 5
+  },
+  "trd_schema": {
+    "Markettype": "Markettype",
+    "Trdmnt": "Trdmnt",
+    "EP_denominator_candidate_Msmvttl": "Msmvttl",
+    "columns_count": 9
+  },
+  "fs_quality": {
+    "year_coverage_min": 1990,
+    "year_coverage_max": 2025,
+    "n_unique_years": 36,
+    "share_typrep_A": 0.5534237874164258,
+    "count_typrep_A": 369422,
+    "count_typrep_A_dec31": 77004,
+    "share_dec31_within_typrep_A": 0.20844454309705432,
+    "missing_rate_B002000101_in_A_dec31": 0.0037270791127733626,
+    "duplicates_rows_at_stkcd_fiscalyear_in_A_dec31": 0,
+    "duplicate_keys_at_stkcd_fiscalyear_in_A_dec31": 0,
+    "unique_keys_at_stkcd_fiscalyear_in_A_dec31": 77004,
+    "negative_earnings_fraction_nonmissing_A_dec31": 0.13350365629521488
+  },
+  "announcement_date_check": {
+    "fs_candidate_date_or_announcement_columns": [],
+    "descriptor_keyword_hits": []
+  },
+  "trd_dec_msmvttl_coverage_markettype_1_4": {
+    "summary": {
+      "min_year": 1990,
+      "max_year": 2025,
+      "years": 36,
+      "mean_share_positive": 1.0,
+      "p10_share_positive": 1.0,
+      "p50_share_positive": 1.0,
+      "p90_share_positive": 1.0,
+      "min_share_positive": 1.0
+    },
+    "first_last_years_sample": [
+      {
+        "year": 1990,
+        "dec_rows": 6,
+        "dec_positive": 6,
+        "share_positive": 1.0
+      },
+      {
+        "year": 1991,
+        "dec_rows": 13,
+        "dec_positive": 13,
+        "share_positive": 1.0
+      },
+      {
+        "year": 1992,
+        "dec_rows": 52,
+        "dec_positive": 52,
+        "share_positive": 1.0
+      },
+      {
+        "year": 1993,
+        "dec_rows": 176,
+        "dec_positive": 176,
+        "share_positive": 1.0
+      },
+      {
+        "year": 1994,
+        "dec_rows": 288,
+        "dec_positive": 288,
+        "share_positive": 1.0
+      },
+      {
+        "year": 2021,
+        "dec_rows": 3134,
+        "dec_positive": 3134,
+        "share_positive": 1.0
+      },
+      {
+        "year": 2022,
+        "dec_rows": 3172,
+        "dec_positive": 3172,
+        "share_positive": 1.0
+      },
+      {
+        "year": 2023,
+        "dec_rows": 3197,
+        "dec_positive": 3197,
+        "share_positive": 1.0
+      },
+      {
+        "year": 2024,
+        "dec_rows": 3172,
+        "dec_positive": 3172,
+        "share_positive": 1.0
+      },
+      {
+        "year": 2025,
+        "dec_rows": 3190,
+        "dec_positive": 3190,
+        "share_positive": 1.0
+      }
+    ]
+  }
+}

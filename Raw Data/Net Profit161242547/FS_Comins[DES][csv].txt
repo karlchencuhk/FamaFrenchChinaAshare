@@ -1,0 +1,5 @@
+Stkcd [Stock Code] - Stock code released by the exchange of the listed company
+ShortName_EN [Stock Short Name] - Stock Short Name released by the exchange of the listed company.
+Accper [Ending Date of Statistics] - Date of accounting statement, denoted by 10 characters, e.g., 1999-12-31.
+Typrep [Statement Type] - The listed company's financial reports are consolidated statements or parent statements. A=Consolidated Statements, B=Parent Statements.
+B002000101 [Net Profit Attributable to Owners of the Parent Company] - The net profit attributable to owners of the parent company in consolidated statements. Used from 2007 onwards.

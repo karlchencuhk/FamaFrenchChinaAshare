@@ -153,11 +153,16 @@ def build_table_iii_md():
 
 def build_table_iv_md():
     rows = read_csv(OUT / 'table_iv_beme_only.csv')
-    headers = ['BE/ME Decile', 'Avg Monthly Return (%)', 'Avg Size']
+    headers = ['BE/ME Decile', 'Avg Monthly Return (%)', 'ln(ME)', 'ln(BE/ME)']
     out = []
     for r in rows:
         d = r['portfolio'].replace('M', '')
-        out.append([d, f3(r['avg_monthly_return_pct']), f3(r['avg_size'])])
+        out.append([
+            d,
+            f3(r['avg_monthly_return_pct']),
+            f4(r.get('avg_ln_me', '')),
+            f4(r.get('avg_ln_be_me', '')),
+        ])
 
     txt = []
     txt.append('## Table IV. Portfolios Formed on BE/ME Alone')

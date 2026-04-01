@@ -9,6 +9,7 @@ SCRIPTS = [
     '03_estimate_preformation_betas.py',
     '04_make_dt_portfolios.py',
     '05_make_dt_tests.py',
+    '05b_make_fama_macbeth_chars_loadings.py',
     '06_format_academic_tables.py',
     '07_format_latex_tables.py',
 ]

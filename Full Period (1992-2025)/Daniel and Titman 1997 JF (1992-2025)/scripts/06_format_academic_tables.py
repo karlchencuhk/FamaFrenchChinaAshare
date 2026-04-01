@@ -48,11 +48,38 @@ def table_dt_md():
     return '\n'.join(txt)
 
 
+def table_fm_md():
+    rows = read_csv(OUT / 'table_dt_fama_macbeth_chars_loadings.csv')
+    headers = ['Model', 'Coefficient', 'Avg slope', 'NW12 t', 'Sig', 'N months', 'Avg N stocks']
+    body = []
+    for r in rows:
+        body.append([
+            r['model'],
+            r['coef'],
+            f3(r['avg_slope']),
+            f3(r['nw12_tstat']),
+            r['signif'],
+            r['n_months'],
+            f3(r['avg_n_stocks']),
+        ])
+
+    txt = []
+    txt.append('## Table 2. Fama-MacBeth Regressions: Characteristics and Loadings Together')
+    txt.append(markdown_table(headers, body))
+    txt.append('')
+    txt.append('Cross-sectional regression each month:')
+    txt.append('- $R_{i,t}^{e}=\gamma_{0,t}+\gamma_{1,t}\ln(Size_{i,t-1})+\gamma_{2,t}\ln(BE/ME_{i,t-1})+\gamma_{3,t}\beta^{SMB}_{i,t-1}+\gamma_{4,t}\beta^{HML}_{i,t-1}+\varepsilon_{i,t}$')
+    txt.append('- Reported slopes are time-series means of $\gamma_{k,t}$ with Newey-West (12) $t$-statistics.')
+    return '\n'.join(txt)
+
+
 def main():
     content = '\n'.join([
         '# Daniel and Titman (1997) Style Tests — China 1992-2025',
         '',
         table_dt_md(),
+        '',
+        table_fm_md(),
         '',
     ])
 

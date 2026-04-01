@@ -45,10 +45,38 @@ def table_1_tex():
     return '\n'.join(lines)
 
 
+def table_2_tex():
+    rows = read_csv(OUT / 'table_dt_fama_macbeth_chars_loadings.csv')
+    lines = []
+    lines.append('\\begin{table}[htbp]')
+    lines.append('\\centering')
+    lines.append('\\caption{Fama--MacBeth cross-sectional regressions with characteristics and loadings (1992--2025)}')
+    lines.append('\\label{tab:dt_fm_chars_loadings}')
+    lines.append('\\small')
+    lines.append('\\begin{tabular}{llrrrrr}')
+    lines.append('\\toprule')
+    lines.append('Model & Coefficient & Avg slope & $t_{NW12}$ & Sig & $N_{months}$ & Avg $N$ \\\\')
+    lines.append('\\midrule')
+    for r in rows:
+        lines.append(
+            f"{tex_escape(r['model'])} & {tex_escape(r['coef'])} & {f3(r['avg_slope'])} & "
+            f"{f3(r['nw12_tstat'])} & {r['signif']} & {r['n_months']} & {f3(r['avg_n_stocks'])} \\\\"
+        )
+    lines.append('\\bottomrule')
+    lines.append('\\end{tabular}')
+    lines.append('\\vspace{0.4em}')
+    lines.append('\\begin{minipage}{0.92\\linewidth}')
+    lines.append('\\footnotesize Monthly cross-sections regress stock excess returns on $\\ln(Size)$, $\\ln(BE/ME)$, pre-formation $\\beta^{SMB}$ and pre-formation $\\beta^{HML}$. Reported estimates are time-series means of monthly slopes; $t$-statistics are Newey--West with 12 lags.')
+    lines.append('\\end{minipage}')
+    lines.append('\\end{table}')
+    return '\n'.join(lines)
+
+
 def main():
     tex = '\n\n'.join([
         '% Auto-generated LaTeX tables for Daniel and Titman tests',
         table_1_tex(),
+        table_2_tex(),
         '',
     ])
     out_tex = OUT / 'academic_tables.tex'
