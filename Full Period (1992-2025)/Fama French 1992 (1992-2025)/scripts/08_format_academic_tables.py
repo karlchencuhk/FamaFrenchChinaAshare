@@ -87,28 +87,37 @@ def build_table_ii_md():
     left = {r['portfolio']: r for r in srows}
     right = {r['portfolio']: r for r in brows}
 
-    headers = [
-        'Decile',
-        'Size-sort Return(%)', 'Size-sort Post-Beta', 'Size-sort Avg Size',
-        'Beta-sort Return(%)', 'Beta-sort Post-Beta', 'Beta-sort Avg Size'
-    ]
-    rows = []
+    headers = ['Decile', 'Average Return (%)', 'Post-ranking Beta', 'ln(ME)', 'ln(BE/ME)']
+
+    rows_size = []
     for i in range(1, 11):
         sr = left.get(f'S{i}', {})
-        br = right.get(f'B{i}', {})
-        rows.append([
+        rows_size.append([
             str(i),
             f3(sr.get('avg_monthly_return_pct', '')),
             f4(sr.get('post_ranking_beta', '')),
-            f3(sr.get('avg_size', '')),
+            f4(sr.get('avg_ln_me', '')),
+            f4(sr.get('avg_ln_be_me', '')),
+        ])
+
+    rows_beta = []
+    for i in range(1, 11):
+        br = right.get(f'B{i}', {})
+        rows_beta.append([
+            str(i),
             f3(br.get('avg_monthly_return_pct', '')),
             f4(br.get('post_ranking_beta', '')),
-            f3(br.get('avg_size', '')),
+            f4(br.get('avg_ln_me', '')),
+            f4(br.get('avg_ln_be_me', '')),
         ])
 
     txt = []
     txt.append('## Table II. Univariate Portfolios on Size and on Beta')
-    txt.append(markdown_table(headers, rows))
+    txt.append('### Panel A: Portfolios Formed on Size (ME)')
+    txt.append(markdown_table(headers, rows_size))
+    txt.append('')
+    txt.append('### Panel B: Portfolios Formed on Pre-ranking Beta')
+    txt.append(markdown_table(headers, rows_beta))
     return '\n'.join(txt)
 
 

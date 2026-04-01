@@ -179,65 +179,54 @@ def table_ii_tex():
     left  = {r['portfolio']: r for r in srows}
     right = {r['portfolio']: r for r in brows}
 
-    body = []
-    # Panel sub-header
-    body.append(['\\multicolumn{4}{c}{\\textit{Size-sorted}}',
-                 '\\multicolumn{3}{c}{\\textit{Beta-sorted}}'])
-
-    cmidrule = ('\\cmidrule(lr){1-4}\\cmidrule(lr){5-7}',)
-    # We inject cmidrule as a raw line via a special sentinel
-    body.append('CMIDRULE_2_4_5_7')
-
-    for i in range(1, 11):
-        sr = left.get(f'S{i}', {})
-        br = right.get(f'B{i}', {})
-        body.append([
-            str(i),
-            f3(sr.get('avg_monthly_return_pct', '')),
-            f4(sr.get('post_ranking_beta', '')),
-            f(float(sr['avg_size']) / 1_000, 1) if sr.get('avg_size') else '',
-            f3(br.get('avg_monthly_return_pct', '')),
-            f4(br.get('post_ranking_beta', '')),
-            f(float(br['avg_size']) / 1_000, 1) if br.get('avg_size') else '',
-        ])
-
-    # Build tabular manually (need cmidrule)
-    hdr = ['Decile',
-           'Ret (\\%)', 'Post-$\\beta$', 'ME (M)',
-           'Ret (\\%)', 'Post-$\\beta$', 'ME (M)']
+    # Build tabular manually to support panel headers
     tab_lines = []
-    tab_lines.append('\\begin{tabular}{lrrr|rrr}')
+    tab_lines.append('\\begin{tabular}{lrrrr}')
     tab_lines.append('\\toprule')
-    tab_lines.append('& \\multicolumn{3}{c}{\\textit{Size-sorted}} & '
-                     '\\multicolumn{3}{c}{\\textit{Beta-sorted}} \\\\')
-    tab_lines.append('\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}')
-    tab_lines.append(' & '.join(hdr) + ' \\\\')
+
+    tab_lines.append('\\multicolumn{5}{l}{\\textit{Panel A: Portfolios formed on size (ME)}} \\\\')
+    tab_lines.append('\\midrule')
+    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ \\\\')
     tab_lines.append('\\midrule')
     for i in range(1, 11):
         sr = left.get(f'S{i}', {})
-        br = right.get(f'B{i}', {})
         row = [
             str(i),
             f3(sr.get('avg_monthly_return_pct', '')),
             f4(sr.get('post_ranking_beta', '')),
-            f(float(sr['avg_size']) / 1_000, 1) if sr.get('avg_size') else '',
-            f3(br.get('avg_monthly_return_pct', '')),
-            f4(br.get('post_ranking_beta', '')),
-            f(float(br['avg_size']) / 1_000, 1) if br.get('avg_size') else '',
+            f4(sr.get('avg_ln_me', '')),
+            f4(sr.get('avg_ln_be_me', '')),
         ]
         tab_lines.append(' & '.join(row) + ' \\\\')
+
+    tab_lines.append('\\midrule')
+    tab_lines.append('\\multicolumn{5}{l}{\\textit{Panel B: Portfolios formed on pre-ranking beta}} \\\\')
+    tab_lines.append('\\midrule')
+    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ \\\\')
+    tab_lines.append('\\midrule')
+    for i in range(1, 11):
+        br = right.get(f'B{i}', {})
+        row = [
+            str(i),
+            f3(br.get('avg_monthly_return_pct', '')),
+            f4(br.get('post_ranking_beta', '')),
+            f4(br.get('avg_ln_me', '')),
+            f4(br.get('avg_ln_be_me', '')),
+        ]
+        tab_lines.append(' & '.join(row) + ' \\\\')
+
     tab_lines.append('\\bottomrule')
     tab_lines.append('\\end{tabular}')
 
     notes = [
         'Portfolios are formed in June of each year on a single characteristic.',
-        'Left panel: decile 1 (S1) has the smallest market equity.',
-        'Right panel: decile 1 (B1) has the lowest pre-ranking beta.',
-        'ME = average market equity in RMB millions.',
+        'Panel A: decile 1 has the smallest market equity (ME).',
+        'Panel B: decile 1 has the lowest pre-ranking beta.',
+        '$\\ln(ME)$ and $\\ln(BE/ME)$ are portfolio averages of firm-level June characteristics used in the monthly memberships.',
     ]
     return wrap_table(
-        caption='Table II: Returns and post-ranking betas for univariate portfolios '
-                'sorted on size and on pre-ranking beta',
+        caption='Table II: Univariate portfolio characteristics for size-sorted and '
+            'pre-ranking-beta-sorted deciles',
         label='tab:size_beta_univariate',
         size_cmd='\\small',
         tabular_lines=tab_lines,
