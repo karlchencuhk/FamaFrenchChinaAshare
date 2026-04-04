@@ -49,9 +49,32 @@ def main():
     lines += ['## Table 2 (FF1993-aligned): Factor Summary',
               markdown_table(['Factor', 'Mean %', 'Std %', 'NW t', 'Ann Mean %', 'Ann Vol %', 'N'], rows2), '']
 
-    rows6 = [[r['portfolio'], f3(r['alpha_pct']), f3(r['nw12_t_alpha']), f4(r['beta_mkt']), f4(r['beta_smb']), f4(r['beta_hml']), f3(r['r2'])] for r in t6]
-    lines += ['## Table 6a (FF1993-aligned): Stock Regressions on MKT_RF, SMB, HML',
-              markdown_table(['Portfolio', 'Alpha %', 't(alpha)', 'b_mkt', 's_smb', 'h_hml', 'R2'], rows6), '']
+    def make_grid(rows, key, formatter):
+        grid = {}
+        for r in rows:
+            p = r['portfolio']
+            s_part, b_part = p.split('B')
+            s = int(s_part.replace('S', ''))
+            b = int(b_part)
+            grid[(s, b)] = formatter(r[key])
+        return [[f'S{i}'] + [grid.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+
+    lines += ['## Table 6a (FF1993-aligned): Stock Regressions on MKT_RF, SMB, HML', '']
+    
+    panel_defs = [
+        ('Panel A: Alpha (%)', 'alpha_pct', f3),
+        ('Panel B: t-statistic for Alpha', 'nw12_t_alpha', f3),
+        ('Panel C: Market Beta (b_mkt)', 'beta_mkt', f4),
+        ('Panel D: SMB Loading (s_smb)', 'beta_smb', f4),
+        ('Panel E: HML Loading (h_hml)', 'beta_hml', f4),
+        ('Panel F: R-squared', 'r2', f3),
+    ]
+
+    for title, key, formatter in panel_defs:
+        lines.append(f'#### {title}')
+        grid_rows = make_grid(t6, key, formatter)
+        lines.append(markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], grid_rows))
+        lines.append('')
 
     def make_alpha_grids(rows):
         grid_alpha = {}
