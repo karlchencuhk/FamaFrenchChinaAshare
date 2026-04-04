@@ -40,33 +40,43 @@ The main completed research folders present in the workspace are:
 - `Daniel and Titman 1997 JF (1992-2025)`
 - `Daniel and Titman 1997 JF (2000-2025)`
 
-### Shared raw data folders
-- `Monthly Stock Price  Returns121529524`
-- `Balance Sheet110248807`
-- `Aggregated Monthly Market Returns141530201`
-- `Risk-Free Rate135436249`
-- `Risk_Free_Rate`
-
-The folders most central to the current project narrative are:
-- `Fama French 1992 (1992-2025)`
-- `Fama French 1992 (2000-2025)`
-- `Fama French 1992 (1992-2010M03)`
-- `Fama French 1992 (2010M04-2025)`
-- `Fama French 1993 (1992-2025)`
-- `Fama French 1993 (2000-2025)`
-- `Fama French 1993 (1992-2010M03)`
-- `Fama French 1993 (2010M04-2025)`
-- `Daniel and Titman 1997 JF (2000-2025)`
-
 The additional `1992-1999` and `Daniel and Titman 1997 JF (1992-2025)` folders are also useful as auxiliary checks and are documented below.
 
 ---
 
-## 3. Raw Data Used
+## 3. Recent Updates and Key Analyses
+
+This section highlights the most recent work completed in the project.
+
+### 3.1 Fama-French 1993 Alignment Project (Full Period 1992-2025)
+
+A major recent update was a full-scale alignment of the Fama-French 1993 replication with the tables and narrative of the original 1993 paper. This was motivated by the need to have outputs that directly map to the classic academic study.
+
+This work is contained in new subfolders within the `Full Period (1992-2025)/Fama French 1993 (1992-2025)/` directory:
+- **`scripts_ff1993_aligned/`**: Contains new Python scripts dedicated to generating and formatting the aligned tables.
+- **`output_ff1993_aligned/`**: Contains the final output tables in `.md`, `.tex`, and `.txt` formats, along with the intermediate CSV files.
+
+The key output file is **`ff1993_aligned_tables.md`**, which presents a complete narrative that:
+1.  **Describes the risk factors** (MKT_RF, SMB, HML) with summary statistics (an analogue to FF1993 Table 1).
+2.  **Presents the "puzzle"** by showing the average excess returns for 25 portfolios sorted on size and book-to-market (an analogue to FF1993 Table 5).
+3.  **Solves the puzzle** by running time-series regressions and showing that the 3-factor model largely eliminates the pricing errors (alphas) that the standard CAPM cannot explain (an analogue to FF1993 Table 9). This includes a head-to-head comparison of CAPM and 3-factor model alphas and their t-statistics.
+4.  **Provides detailed diagnostics**, including factor loadings and R-squared values from the 3-factor model regressions (an analogue to FF1993 Table 6).
+
+This aligned analysis confirms that the Fama-French 3-factor model is a significant improvement over the CAPM for explaining stock returns in the Chinese A-share market for the full 1992-2025 period.
+
+### 3.2 Updates to Fama-French 1992 Replication (Full Period 1992-2025)
+
+Minor but important updates were made to the Fama-MacBeth (cross-sectional) analysis for the full period.
+- The main output table for the Fama-MacBeth regressions (Table IV analogue) was updated to include the average cross-sectional `ln(ME)` and `ln(BE/ME)` characteristics of the 100 test portfolios.
+- The table was also updated to include the average `post-ranking beta` for each portfolio, providing a clearer picture of the relationship between beta and returns after accounting for size.
+
+---
+
+## 4. Raw Data Used
 
 The analysis uses the following raw datasets.
 
-### 3.1 Monthly stock returns and market equity
+### 4.1 Monthly stock returns and market equity
 **File used:** `Monthly Stock Price  Returns121529524/TRD_Mnth_SSE_A_SZSE_A.txt`
 
 This file provides the stock-level monthly panel used in every pipeline. Key fields used by the scripts include:
@@ -85,7 +95,7 @@ This file provides the stock-level monthly panel used in every pipeline. Key fie
 **Universe restriction used in the code:**
 - Only `Markettype in ('1', '4')` are kept in the stock-level panel. This corresponds to the main A-share universe used in the project scripts.
 
-### 3.2 Annual balance sheet data
+### 4.2 Annual balance sheet data
 **File used:** `Balance Sheet110248807/FS_Combas.csv`
 
 This file is used to construct annual book equity.
@@ -101,7 +111,7 @@ This file is used to construct annual book equity.
 - The scripts prefer annual statement dates that correspond to year-end accounting values
 - In the FF1992 and D&T pipelines, year-end `-12-31` statements are explicitly targeted for book equity assignment
 
-### 3.3 Aggregate market returns
+### 4.3 Aggregate market returns
 **File used:** `Aggregated Monthly Market Returns141530201/TRD_Cnmont.csv`
 
 **Fields used:**
@@ -113,7 +123,7 @@ This file is used to construct annual book equity.
 - Only `Markettype == '5'` is used to proxy the aggregate market return relevant to the China A-share setting
 - The monthly market return is combined with the monthly risk-free rate to construct `MKT_RF`
 
-### 3.4 Monthly risk-free rate
+### 4.4 Monthly risk-free rate
 **File used by scripts:** `Risk-Free Rate135436249/TRD_Nrrate.csv`
 
 **Fields used:**
@@ -125,7 +135,7 @@ This file is used to construct annual book equity.
 - The monthly risk-free rate is converted from percent to decimal by dividing by 100
 - Used to form stock excess returns and market excess returns
 
-### 3.5 Additional risk-free-rate folder present in the workspace
+### 4.5 Additional risk-free-rate folder present in the workspace
 An additional folder exists:
 - `Risk_Free_Rate/IR3TIB01CNM156N.csv`
 
@@ -133,11 +143,11 @@ This file is present in the workspace but is **not the file referenced by the ac
 
 ---
 
-## 4. Common Sample Design and Core Assumptions
+## 5. Common Sample Design and Core Assumptions
 
 Across the pipelines, the following conventions are used repeatedly.
 
-### 4.1 Return window conventions
+### 5.1 Return window conventions
 The code uses sample-window controls through `RETURN_START` and `RETURN_END` in each folder-specific `00_config.py`.
 
 The main windows documented in this project are:
@@ -147,14 +157,14 @@ The main windows documented in this project are:
 - `2010-04` to `2025-12`
 - `1992-07` to `1999-12` in the archived early-sample folders
 
-### 4.2 July-to-June holding convention
+### 5.2 July-to-June holding convention
 The project follows the standard Fama-French timing convention:
 - Firm characteristics are measured at the June formation date
 - Portfolio membership is then applied from **July of year `t` through June of year `t+1`**
 
 This convention appears in both the FF1992 and FF1993 implementations and in the Daniel-Titman membership logic.
 
-### 4.3 Book-to-market timing convention
+### 5.3 Book-to-market timing convention
 The code uses lagged accounting information to avoid look-ahead bias.
 
 #### In FF1992 scripts
@@ -164,7 +174,7 @@ The code uses lagged accounting information to avoid look-ahead bias.
 #### In FF1993 scripts
 - For factor construction, the code uses book equity from year `t-1` and market equity from the previous December for BM sorts, consistent with a standard FF-style implementation
 
-### 4.4 Size measure
+### 5.4 Size measure
 Size is measured using `Msmvttl` from the stock monthly file.
 
 **Important assumption:** this is a **total market equity** measure, not an explicitly free-float or tradable-share measure.
@@ -174,14 +184,14 @@ Implications:
 - It may be more problematic in early China, especially before and during the split-share reform era, because non-tradable shares distort the mapping between price and true tradable market value
 - This issue is especially relevant for interpreting the value effect in the pre-reform period, but it does not overturn the project’s main conclusion that value is not a robust premium in China
 
-### 4.5 Beta estimation windows
+### 5.5 Beta estimation windows
 Two different beta windows are used depending on the project:
 - **FF1992:** `BETA_WINDOW = 60`, `BETA_MIN_OBS = 24`
 - **Daniel-Titman:** `BETA_WINDOW = 36`, `BETA_MIN_OBS = 24`
 
 The shorter window in the Daniel-Titman pipeline reflects the specific need to estimate pre-formation factor loadings for the characteristic-versus-loading tests.
 
-### 4.6 Newey-West inference
+### 5.6 Newey-West inference
 All major significance reporting uses:
 - `NW_LAG = 12`
 
@@ -191,12 +201,12 @@ This applies to:
 - Time-series alpha inference
 - Daniel-Titman portfolio spread inference
 
-### 4.7 Weighting conventions
+### 5.7 Weighting conventions
 Where portfolios are value-weighted, the scripts generally:
 - use previous-month market equity where available
 - fall back to contemporaneous market equity if necessary
 
-### 4.8 Data quality and missingness handling
+### 5.8 Data quality and missingness handling
 The scripts are conservative and skip observations when key fields are missing.
 
 Examples:
@@ -205,7 +215,7 @@ Examples:
 - No factor or spread observation if required component portfolios are unavailable
 - No beta if rolling-window minimum observations are not met
 
-### 4.9 No heavy external dependencies
+### 5.9 No heavy external dependencies
 The project intentionally uses only pure Python scripts and custom matrix/statistical routines.
 
 This means:
@@ -215,9 +225,9 @@ This means:
 
 ---
 
-## 5. Methodology by Pipeline
+## 6. Methodology by Pipeline
 
-## 5.1 Fama-French 1992 style replication
+## 6.1 Fama-French 1992 style replication
 
 ### Objective
 Replicate the FF1992 cross-sectional logic for Chinese A-shares:
@@ -306,7 +316,7 @@ Key outputs include:
 
 ---
 
-## 5.2 Fama-French 1993 style replication
+## 6.2 Fama-French 1993 style replication
 
 ### Objective
 Construct and evaluate China-specific FF3 factors:
@@ -386,7 +396,7 @@ Key outputs include:
 
 ---
 
-## 5.3 Daniel-Titman 1997 style replication
+## 6.3 Daniel-Titman 1997 style replication
 
 ### Objective
 Test whether cross-sectional returns are better explained by:
@@ -454,9 +464,9 @@ Key outputs include:
 
 ---
 
-## 6. Sample Windows Completed and Why They Matter
+## 7. Sample Windows Completed and Why They Matter
 
-## 6.1 Full long sample: 1992-07 to 2025-12
+## 7.1 Full long sample: 1992-07 to 2025-12
 This is the broadest China A-share sample in the project and captures:
 - the early market opening period
 - the pre-split-share-reform era
@@ -467,7 +477,7 @@ This is the broadest China A-share sample in the project and captures:
 
 This sample is useful for maximum power and for broad historical comparison, but it also mixes very different market regimes.
 
-## 6.2 Main modern sample: 2000-01 to 2025-12
+## 7.2 Main modern sample: 2000-01 to 2025-12
 This sample starts after the earliest years of the Chinese market and is useful for:
 - improving data comparability
 - reducing the extreme thin-market effects of the 1990s
@@ -475,7 +485,7 @@ This sample starts after the earliest years of the Chinese market and is useful 
 
 This sample turned out to be especially informative for the apparent value effect, because it showed stronger BE/ME significance than the full 1992-2025 sample.
 
-## 6.3 Pre/post-2010 split
+## 7.3 Pre/post-2010 split
 A key extension in this project is the split at:
 - **pre period:** `1992-07` to `2010-03`
 - **post period:** `2010-04` to `2025-12`
@@ -487,16 +497,16 @@ The split is motivated by an institutional-regime interpretation centered on:
 
 This split is not a perfect structural-break design, but it is economically meaningful and aligns with the idea that the Chinese market after 2010 is a more modern and arbitrage-capable environment.
 
-## 6.4 Archived early-sample check: 1992-07 to 1999-12
+## 7.4 Archived early-sample check: 1992-07 to 1999-12
 The `1992-1999` folders isolate the earliest stage of the Chinese market. These are useful as descriptive checks because they show how extreme and unstable the earliest period was.
 
 ---
 
-## 7. Headline Empirical Results
+## 8. Headline Empirical Results
 
-## 7.1 Fama-French 1992 results
+## 8.1 Fama-French 1992 results
 
-### 7.1.1 FF1992, full sample 1992-2025
+### 8.1.1 FF1992, full sample 1992-2025
 From `Fama French 1992 (1992-2025)/output/academic_tables.md`:
 
 #### Key Fama-MacBeth results
@@ -510,7 +520,7 @@ Model `M7_all3`:
 - Size is a robust negative relation: smaller firms earn higher average returns.
 - Book-to-market is not a reliable independent predictor in the full long sample once size and beta are controlled for.
 
-### 7.1.2 FF1992, modern sample 2000-2025
+### 8.1.2 FF1992, modern sample 2000-2025
 From `Fama French 1992 (2000-2025)/output/academic_tables.md`:
 
 Model `M7_all3`:
@@ -523,7 +533,7 @@ Model `M7_all3`:
 - Value appears significant in this sub-sample.
 - This raised the question of whether the value result is structural or concentrated in a particular historical regime.
 
-### 7.1.3 FF1992, pre-2010 split
+### 8.1.3 FF1992, pre-2010 split
 From `Fama French 1992 (1992-2010M03)/output/table_iii_fama_macbeth.csv`:
 
 Model `M7_all3`:
@@ -536,7 +546,7 @@ Model `M7_all3`:
 - Value disappears once the long pre-2010 period is isolated.
 - This suggests the 2000-2025 value result is not a stable cross-sectional law.
 
-### 7.1.4 FF1992, post-2010 split
+### 8.1.4 FF1992, post-2010 split
 From `Fama French 1992 (2010M04-2025)/output/table_iii_fama_macbeth.csv`:
 
 Model `M7_all3`:
@@ -548,7 +558,7 @@ Model `M7_all3`:
 - Size remains robust in the post-2010 era.
 - Value is at most weakly marginal and far from a strong, stable premium.
 
-### 7.1.5 FF1992, early sample 1992-1999
+### 8.1.5 FF1992, early sample 1992-1999
 From `Fama French 1992 (1992-1999)/output/academic_tables.md`:
 
 Model `M7_all3`:
@@ -567,9 +577,9 @@ Across all FF1992 windows examined:
 
 ---
 
-## 7.2 Fama-French 1993 results
+## 8.2 Fama-French 1993 results
 
-### 7.2.1 FF1993, full sample 1992-2025
+### 8.2.1 FF1993, full sample 1992-2025
 From `Fama French 1993 (1992-2025)/output/academic_tables.md`:
 
 #### Factor-premia significance
@@ -588,7 +598,7 @@ From `Fama French 1993 (1992-2025)/output/academic_tables.md`:
 - HML is weak and not reliably priced.
 - The FF3 model fits the 25 size-BM portfolios reasonably, but not perfectly.
 
-### 7.2.2 FF1993, modern sample 2000-2025
+### 8.2.2 FF1993, modern sample 2000-2025
 From `Fama French 1993 (2000-2025)/output/academic_tables.md`:
 
 #### Factor-premia significance
@@ -607,7 +617,7 @@ From `Fama French 1993 (2000-2025)/output/academic_tables.md`:
 - HML becomes even weaker in the 2000-2025 sample.
 - The model leaves more statistically significant alphas than in the 1992-2025 sample, suggesting imperfect pricing even when restricted to the more modern sample.
 
-### 7.2.3 FF1993, pre-2010 split
+### 8.2.3 FF1993, pre-2010 split
 From `Fama French 1993 (1992-2010M03)/output/table_8_factor_premia_significance.csv` and `table_6_alpha_diagnostics.csv`:
 
 #### Factor-premia significance
@@ -624,7 +634,7 @@ From `Fama French 1993 (1992-2010M03)/output/table_8_factor_premia_significance.
 - HML remains statistically weak.
 - FF3 fit is actually fairly tight in this split when judged by significant alpha counts.
 
-### 7.2.4 FF1993, post-2010 split
+### 8.2.4 FF1993, post-2010 split
 From `Fama French 1993 (2010M04-2025)/output/table_8_factor_premia_significance.csv` and `table_6_alpha_diagnostics.csv`:
 
 #### Factor-premia significance
@@ -641,7 +651,7 @@ From `Fama French 1993 (2010M04-2025)/output/table_8_factor_premia_significance.
 - HML is clearly not a priced factor in the post-2010 sample.
 - FF3 leaves substantially more unexplained alphas post-2010 than pre-2010.
 
-### 7.2.5 FF1993, early sample 1992-1999
+### 8.2.5 FF1993, early sample 1992-1999
 From `Fama French 1993 (1992-1999)/output/academic_tables.md`:
 
 #### Factor-premia significance
@@ -660,9 +670,9 @@ Across all FF1993 windows examined:
 
 ---
 
-## 7.3 Daniel-Titman results
+## 8.3 Daniel-Titman results
 
-### 7.3.1 D&T, modern sample 2000-2025
+### 8.3.1 D&T, modern sample 2000-2025
 From `Daniel and Titman 1997 JF (2000-2025)/output/academic_tables.md`:
 
 #### Size-side tests
@@ -684,7 +694,7 @@ When **beta_HML loading is held fixed** and BM is varied:
 - The value side is weak in both characteristic and loading form.
 - This is strongly consistent with the broader FF1992/FF1993 evidence.
 
-### 7.3.2 D&T, full sample 1992-2025
+### 8.3.2 D&T, full sample 1992-2025
 From `Daniel and Titman 1997 JF (1992-2025)/output/academic_tables.md`:
 
 #### Size-side tests
@@ -707,11 +717,11 @@ Across the D&T analyses examined:
 
 ---
 
-## 8. Interpretation of the Time-Split Results
+## 9. Interpretation of the Time-Split Results
 
 The time-split exercise was one of the most important extensions completed in this project.
 
-## 8.1 Why split at 2010-04
+## 9.1 Why split at 2010-04
 The chosen break is economically motivated by the March 2010 launch of China’s margin-trading and short-selling pilot. Using April 2010 as the first post-break month provides a clean monthly separation.
 
 The split is intended to capture changes in:
@@ -721,7 +731,7 @@ The split is intended to capture changes in:
 - institutional participation
 - pricing efficiency
 
-## 8.2 What the split shows
+## 9.2 What the split shows
 
 ### On size
 - Size remains significant in FF1992 before and after 2010.
@@ -746,7 +756,7 @@ This is an interesting result because one might expect a more modern market to b
 
 ---
 
-## 9. What to Conclude About Value in China
+## 10. What to Conclude About Value in China
 
 The most defensible conclusion from the project is:
 
@@ -772,7 +782,7 @@ The strongest project-wide summary is therefore:
 
 ---
 
-## 10. Why 2000-2025 Can Still Show a Stronger Value Signal
+## 11. Why 2000-2025 Can Still Show a Stronger Value Signal
 
 One important interpretive issue addressed in the project is why the `2000-2025` FF1992 window can produce a significant `ln_be_me` coefficient while the split-sample evidence is weak.
 
@@ -789,9 +799,9 @@ However, the time-split exercise shows that this should **not** be interpreted a
 
 ---
 
-## 11. Methodological Caveats and Limitations
+## 12. Methodological Caveats and Limitations
 
-### 11.1 Total market equity vs tradable/free-float market equity
+### 12.1 Total market equity vs tradable/free-float market equity
 The scripts use `Msmvttl` from the monthly stock file, which is a total market equity measure.
 
 This matters because:
@@ -803,7 +813,7 @@ That said, the project’s substantive conclusion does not rely on free-float co
 - if anything, this issue makes value harder to interpret cleanly
 - but the overwhelming empirical pattern across windows still says value is not robust
 
-### 11.2 Structural breaks in China are large
+### 12.2 Structural breaks in China are large
 China’s equity market changed dramatically across:
 - the early market-opening period
 - state-owned share overhang
@@ -813,7 +823,7 @@ China’s equity market changed dramatically across:
 
 As a result, pooled full-sample estimates should always be interpreted cautiously.
 
-### 11.3 Three factors may be too few for post-2010 China
+### 12.3 Three factors may be too few for post-2010 China
 The increase in significant alphas after 2010 suggests that FF3 is missing important dimensions of returns in the later period.
 
 Potential missing dimensions include:
@@ -823,7 +833,7 @@ Potential missing dimensions include:
 - mispricing or speculative intensity
 - China-specific state-ownership or policy exposure
 
-### 11.4 Pure-Python implementation trade-offs
+### 12.4 Pure-Python implementation trade-offs
 The code is transparent and reproducible, but because all estimation is hand-coded:
 - numerical routines are intentionally simple
 - there is less convenience than in a scientific-Python or R environment
@@ -831,7 +841,7 @@ The code is transparent and reproducible, but because all estimation is hand-cod
 
 ---
 
-## 12. Practical Summary of What Was Done
+## 13. Practical Summary of What Was Done
 
 In plain terms, the project accomplished the following:
 
@@ -847,7 +857,7 @@ In plain terms, the project accomplished the following:
 
 ---
 
-## 13. Recommended Paper Positioning
+## 14. Recommended Paper Positioning
 
 If this project is written up as a paper or thesis chapter, the most coherent positioning is:
 
@@ -865,7 +875,7 @@ This project’s findings are best framed as being consistent with the literatur
 
 ---
 
-## 14. Key File-Level Outputs to Cite
+## 15. Key File-Level Outputs to Cite
 
 ### FF1992 key outputs
 - `Fama French 1992 (1992-2025)/output/table_iii_fama_macbeth.csv`
@@ -889,7 +899,7 @@ This project’s findings are best framed as being consistent with the literatur
 
 ---
 
-## 15. Final Bottom-Line Conclusions
+## 16. Final Bottom-Line Conclusions
 
 ### Conclusion 1: Beta is not priced
 Across the FF1992 regressions, beta never emerges as a robust positive explanatory variable for average returns.
@@ -920,7 +930,7 @@ The simplest and strongest summary of everything done in this workspace is:
 
 ---
 
-## 16. Suggested Next Extensions
+## 17. Suggested Next Extensions
 
 Natural next steps, if the project continues, would be:
 - extend Daniel-Titman tests to the pre/post-2010 split directly
@@ -932,7 +942,7 @@ Natural next steps, if the project continues, would be:
 
 ---
 
-## 17. Status of This Document
+## 18. Status of This Document
 
 This document is based on the scripts and output files currently present in the workspace and is intended to serve as a detailed project memo / research record. It is written to be used as:
 - a project summary
