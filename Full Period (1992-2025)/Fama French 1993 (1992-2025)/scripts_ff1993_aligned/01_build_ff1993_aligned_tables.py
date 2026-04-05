@@ -135,7 +135,7 @@ def ols_with_nw(y, x_cols, lag=12):
 
 
 def build_table1_size_bm_grid():
-    rows = read_csv(cfg.SRC_OUTPUT / 'ff3_port25_monthly.csv')
+    rows = read_csv(cfg.OUT_DIR / 'ff3_port25_monthly.csv')
     acc = defaultdict(lambda: {'ret': [], 'n': []})
 
     for r in rows:
@@ -169,7 +169,7 @@ def build_table1_size_bm_grid():
 
 
 def build_table2_factor_summary():
-    rows = read_csv(cfg.SRC_OUTPUT / 'table_1_factor_summary.csv')
+    rows = read_csv(cfg.OUT_DIR / 'ff1993_table1_summary.csv')
     out = []
     for r in rows:
         out.append({
@@ -188,8 +188,46 @@ def build_table2_factor_summary():
     )
 
 
+def build_table2_portfolio_stats():
+    rows = read_csv(cfg.OUT_DIR / 'ff3_port25_monthly.csv')
+    by_port = defaultdict(list)
+    for r in rows:
+        s = int(r['size_quintile'])
+        b = int(r['bm_quintile'])
+        ex = to_float(r.get('excess_return'))
+        if ex is not None:
+            by_port[(s, b)].append(ex)
+
+    out = []
+    for s in range(1, 6):
+        for b in range(1, 6):
+            vals = by_port.get((s, b), [])
+            if not vals:
+                continue
+            res = ols_with_nw(vals, [], lag=12)
+            mu = sum(vals) / len(vals)
+            n = len(vals)
+            var = sum((v - mu) ** 2 for v in vals) / (n - 1) if n > 1 else 0
+            std = math.sqrt(var) if var > 0 else 0
+            out.append({
+                'size_quintile': s,
+                'bm_quintile': b,
+                'portfolio': f'S{s}B{b}',
+                'mean_pct': mu * 100.0,
+                'std_pct': std * 100.0,
+                'nw12_tstat': res['t_nw'][0] if res else None,
+                'n_months': n,
+            })
+
+    write_csv(
+        cfg.OUT_DIR / 'table_2_ff1993_port25_stats.csv',
+        ['size_quintile', 'bm_quintile', 'portfolio', 'mean_pct', 'std_pct', 'nw12_tstat', 'n_months'],
+        out,
+    )
+
+
 def build_table6_stock_regressions():
-    rows = read_csv(cfg.SRC_OUTPUT / 'table_5_25port_ff3_regressions.csv')
+    rows = read_csv(cfg.OUT_DIR / 'ff1993_table5_regressions.csv')
     write_csv(
         cfg.OUT_DIR / 'table_6a_ff1993_stock_regressions.csv',
         ['portfolio', 'size_quintile', 'bm_quintile', 'alpha_pct', 'nw12_t_alpha', 'beta_mkt', 'nw12_t_mkt', 'beta_smb', 'nw12_t_smb', 'beta_hml', 'nw12_t_hml', 'r2', 'n_months'],
@@ -198,9 +236,7 @@ def build_table6_stock_regressions():
 
 
 def build_table9_alpha_analogue():
-    rows = read_csv(cfg.SRC_OUTPUT / 'table_5_25port_ff3_regressions.csv')
-    summary = read_csv(cfg.SRC_OUTPUT / 'table_6_alpha_diagnostics.csv')
-    pe = read_csv(cfg.SRC_OUTPUT / 'table_7_pricing_errors.csv')
+    rows = read_csv(cfg.OUT_DIR / 'ff1993_table5_regressions.csv')
 
     out_a = []
     for r in rows:
@@ -217,26 +253,21 @@ def build_table9_alpha_analogue():
         out_a,
     )
 
-    summ_map = {r['metric']: r['value'] for r in summary}
-    rmse = ''
-    mae = ''
-    for r in pe:
-        if r.get('portfolio') == 'SUMMARY':
-            rmse = r.get('rmse_pct', '')
-            mae = r.get('mae_pct', '')
-            break
+    tvals = [to_float(r['nw12_t_alpha']) for r in rows if r.get('nw12_t_alpha') not in (None, '')]
+    alphas = [to_float(r['alpha_pct']) for r in rows if r.get('alpha_pct') not in (None, '')]
+    abs_alphas = [abs(a) for a in alphas if a is not None]
 
     out_c = [
-        {'metric': 'n_portfolios', 'value': summ_map.get('n_portfolios', '')},
-        {'metric': 'n_sig_10pct', 'value': summ_map.get('n_sig_10pct', '')},
-        {'metric': 'n_sig_5pct', 'value': summ_map.get('n_sig_5pct', '')},
-        {'metric': 'n_sig_1pct', 'value': summ_map.get('n_sig_1pct', '')},
-        {'metric': 'mean_alpha_pct', 'value': summ_map.get('mean_alpha_pct', '')},
-        {'metric': 'mean_abs_alpha_pct', 'value': summ_map.get('mean_abs_alpha_pct', '')},
-        {'metric': 'max_abs_alpha_pct', 'value': summ_map.get('max_abs_alpha_pct', '')},
-        {'metric': 'rmse_pct', 'value': rmse},
-        {'metric': 'mae_pct', 'value': mae},
-        {'metric': 'joint_test_note', 'value': 'GRS not implemented; diagnostics shown as FF1993 Table 9 analogue.'},
+        {'metric': 'n_portfolios', 'value': len(alphas)},
+        {'metric': 'n_sig_10pct', 'value': sum(1 for t in tvals if t is not None and abs(t) >= 1.645)},
+        {'metric': 'n_sig_5pct', 'value': sum(1 for t in tvals if t is not None and abs(t) >= 1.960)},
+        {'metric': 'n_sig_1pct', 'value': sum(1 for t in tvals if t is not None and abs(t) >= 2.576)},
+        {'metric': 'mean_alpha_pct', 'value': '' if not alphas else sum(alphas) / len(alphas)},
+        {'metric': 'mean_abs_alpha_pct', 'value': '' if not abs_alphas else sum(abs_alphas) / len(abs_alphas)},
+        {'metric': 'max_abs_alpha_pct', 'value': '' if not abs_alphas else max(abs_alphas)},
+        {'metric': 'rmse_pct', 'value': ''},
+        {'metric': 'mae_pct', 'value': ''},
+        {'metric': 'joint_test_note', 'value': 'Diagnostics recomputed from ff1993_table5_regressions.csv (SSE-breakpoint updated). GRS not implemented.'},
     ]
 
     write_csv(
@@ -247,8 +278,8 @@ def build_table9_alpha_analogue():
 
 
 def build_table9_capm_only():
-    port_rows = read_csv(cfg.SRC_OUTPUT / 'ff3_port25_monthly.csv')
-    fac_rows = read_csv(cfg.SRC_OUTPUT / 'ff3_factors_monthly.csv')
+    port_rows = read_csv(cfg.OUT_DIR / 'ff3_port25_monthly.csv')
+    fac_rows = read_csv(cfg.OUT_DIR / 'ff1993_factors.csv')
 
     mkt = {r['Trdmnt']: to_float(r.get('MKT_RF')) for r in fac_rows}
 
@@ -309,9 +340,84 @@ def build_table9_capm_only():
     )
 
 
+def build_portfolio_characteristics():
+    rows = read_csv(cfg.OUT_DIR / 'ff3_port25_monthly.csv')
+    
+    # Convert to numeric, handle dates
+    for r in rows:
+        r['year'] = int(r['Trdmnt'][:4])
+        r['me'] = to_float(r['me'])
+        r['bm'] = to_float(r['bm'])
+        r['size_quintile'] = int(r['size_quintile'])
+        r['bm_quintile'] = int(r['bm_quintile'])
+
+    # Group by year to get total market equity per year
+    total_me_by_year = defaultdict(float)
+    for r in rows:
+        if r['me'] is not None:
+            total_me_by_year[r['year']] += r['me']
+
+    # Group by portfolio and year
+    port_year_stats = defaultdict(lambda: {'me_sum': 0.0, 'n': 0})
+    for r in rows:
+        if r['me'] is not None:
+            key = (r['year'], r['size_quintile'], r['bm_quintile'])
+            port_year_stats[key]['me_sum'] += r['me']
+            port_year_stats[key]['n'] += 1
+
+    # Calculate annual stats
+    annual_stats = []
+    for (year, s, b), data in port_year_stats.items():
+        total_me = total_me_by_year[year]
+        avg_size = data['me_sum'] / data['n'] if data['n'] > 0 else 0
+        pct_market = (data['me_sum'] / total_me) * 100 if total_me > 0 else 0
+        annual_stats.append({
+            'year': year,
+            'size_quintile': s,
+            'bm_quintile': b,
+            'avg_size': avg_size,
+            'pct_market': pct_market,
+            'n_firms': data['n']
+        })
+
+    # Time-series average of annual stats
+    ts_avg_stats = defaultdict(lambda: {'avg_size': [], 'pct_market': [], 'n_firms': []})
+    for stat in annual_stats:
+        key = (stat['size_quintile'], stat['bm_quintile'])
+        ts_avg_stats[key]['avg_size'].append(stat['avg_size'])
+        ts_avg_stats[key]['pct_market'].append(stat['pct_market'])
+        ts_avg_stats[key]['n_firms'].append(stat['n_firms'])
+
+    output_rows = []
+    for s in range(1, 6):
+        for b in range(1, 6):
+            key = (s, b)
+            data = ts_avg_stats[key]
+            if not data['avg_size']: continue
+            
+            avg_size = sum(data['avg_size']) / len(data['avg_size'])
+            avg_pct_market = sum(data['pct_market']) / len(data['pct_market'])
+            avg_n_firms = sum(data['n_firms']) / len(data['n_firms'])
+            
+            output_rows.append({
+                'size_quintile': s,
+                'bm_quintile': b,
+                'avg_firm_size': avg_size,
+                'avg_pct_of_market_value': avg_pct_market,
+                'avg_firm_count': avg_n_firms
+            })
+
+    write_csv(
+        cfg.OUT_DIR / 'ff1993_portfolio_characteristics.csv',
+        ['size_quintile', 'bm_quintile', 'avg_firm_size', 'avg_pct_of_market_value', 'avg_firm_count'],
+        output_rows
+    )
+
+
 def main():
     build_table1_size_bm_grid()
     build_table2_factor_summary()
+    build_table2_portfolio_stats()
     build_table6_stock_regressions()
     build_table9_alpha_analogue()
     build_table9_capm_only()

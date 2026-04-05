@@ -21,6 +21,14 @@ def f4(x):
     return '' if x in (None, '') else f"{float(x):.4f}"
 
 
+def f2(x):
+    return '' if x in (None, '') else f"{float(x):.2f}"
+
+
+def f0(x):
+    return '' if x in (None, '') else f"{int(float(x))}"
+
+
 def markdown_table(headers, rows):
     out = []
     out.append('| ' + ' | '.join(headers) + ' |')
@@ -30,24 +38,67 @@ def markdown_table(headers, rows):
     return '\n'.join(out)
 
 
+def make_grid_from_long_df(rows, value_col, formatter):
+    grid = {}
+    for r in rows:
+        size_q = int(r['size_quintile'])
+        bm_q = int(r['bm_quintile'])
+        grid[(size_q, bm_q)] = formatter(r[value_col])
+    return [[f'S{i}'] + [grid.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
+
 def main():
-    t1 = read_csv(cfg.OUT_DIR / 'table_1_ff1993_size_bm_5x5.csv')
-    t2 = read_csv(cfg.OUT_DIR / 'table_2_ff1993_factor_summary.csv')
-    t6 = read_csv(cfg.OUT_DIR / 'table_6a_ff1993_stock_regressions.csv')
-    t9a_capm = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_capm_only_by_portfolio.csv')
-    t9a_ff3 = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_alpha_by_portfolio.csv')
-    t9c = read_csv(cfg.OUT_DIR / 'table_9c_ff1993_capm_only_diagnostics.csv')
+    # Reading all necessary CSV files
+    try:
+        t_chars = read_csv(cfg.OUT_DIR / 'ff1993_portfolio_characteristics.csv')
+        t1 = read_csv(cfg.OUT_DIR / 'table_1_ff1993_size_bm_5x5.csv')
+        t2 = read_csv(cfg.OUT_DIR / 'table_2_ff1993_factor_summary.csv')
+        t2_port = read_csv(cfg.OUT_DIR / 'table_2_ff1993_port25_stats.csv')
+        t6 = read_csv(cfg.OUT_DIR / 'table_6a_ff1993_stock_regressions.csv')
+        t9a_capm = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_capm_only_by_portfolio.csv')
+        t9a_ff3 = read_csv(cfg.OUT_DIR / 'table_9a_ff1993_alpha_by_portfolio.csv')
+        # t9c = read_csv(cfg.OUT_DIR / 'table_9c_ff1993_capm_only_diagnostics.csv')
+    except FileNotFoundError as e:
+        print(f"Error reading file: {e}. Please ensure all data-building scripts have run successfully.")
+        return
 
     lines = ['# FF1993-Aligned Tables (Full Period, Stock-side focus)', '']
 
+    # --- Updated Table Generation ---
+    # Table 1a: Average Firm Size (ME)
+    rows_size = make_grid_from_long_df(t_chars, 'avg_me_rmb_mm', f0)
+    lines += ['## Table 1a (Analogue): Average Firm Size (ME, RMB MM)',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows_size), '']
+
+    # Table 1b: Average % of Total Market Value
+    rows_mkt_pct = make_grid_from_long_df(t_chars, 'avg_me_pct_of_total', f2)
+    lines += ['## Table 1b (Analogue): Average % of Total Market Value',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows_mkt_pct), '']
+
+    # Table 1c: Average Number of Firms
+    rows_n_firms = make_grid_from_long_df(t_chars, 'avg_n_firms', f0)
+    lines += ['## Table 1c (Analogue): Average Number of Firms',
+              markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows_n_firms), '']
+
     grid = {(int(r['size_quintile']), int(r['bm_quintile'])): f3(r['avg_excess_return_pct']) for r in t1}
     rows = [[f'S{i}'] + [grid.get((i, j), '') for j in range(1, 6)] for i in range(1, 6)]
-    lines += ['## Table 1 (FF1993-aligned): 5x5 Size-BE/ME Portfolios, Avg Excess Return (%)',
+    lines += ['## Table 1e (FF1993-aligned): 5x5 Size-BE/ME Portfolios, Avg Excess Return (%)',
               markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], rows), '']
 
     rows2 = [[r['factor'], f3(r['mean_monthly_pct']), f3(r['std_monthly_pct']), f3(r['nw12_tstat_mean']), f3(r['annualized_mean_pct']), f3(r['annualized_vol_pct']), r['n_months']] for r in t2]
     lines += ['## Table 2 (FF1993-aligned): Factor Summary',
               markdown_table(['Factor', 'Mean %', 'Std %', 'NW t', 'Ann Mean %', 'Ann Vol %', 'N'], rows2), '']
+
+    grid_mean = make_grid_from_long_df(t2_port, 'mean_pct', f3)
+    grid_std  = make_grid_from_long_df(t2_port, 'std_pct', f2)
+    grid_t    = make_grid_from_long_df(t2_port, 'nw12_tstat', f3)
+    hdr = ['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5']
+    lines += ['## Table 2 (Extended): 25-Portfolio Return Statistics',
+              '### Panel A: Mean Excess Return (%/month)',
+              markdown_table(hdr, grid_mean), '',
+              '### Panel B: Standard Deviation (%/month)',
+              markdown_table(hdr, grid_std), '',
+              '### Panel C: NW t-statistic (mean ≠ 0)',
+              markdown_table(hdr, grid_t), '']
 
     def make_grid(rows, key, formatter):
         grid = {}
@@ -109,9 +160,9 @@ def main():
               markdown_table(['Size\\BM', 'BM1', 'BM2', 'BM3', 'BM4', 'BM5'], ff3_t),
               '']
 
-    rows9c = [[r['metric'], r['value']] for r in t9c]
-    lines += ['## Table 9c (Analogue, CAPM only): Alpha Diagnostics',
-              markdown_table(['Metric', 'Value'], rows9c), '']
+    # rows9c = [[r['metric'], r['value']] for r in t9c]
+    # lines += ['## Table 9c (Analogue, CAPM only): Alpha Diagnostics',
+    #           markdown_table(['Metric', 'Value'], rows9c), '']
 
     md = '\n'.join(lines)
     (cfg.OUT_DIR / 'ff1993_aligned_tables.md').write_text(md, encoding='utf-8')

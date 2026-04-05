@@ -1,14 +1,8 @@
 import csv
 import math
 from collections import defaultdict
-from pathlib import Path
-import importlib.util
-
-
-_cfg_path = Path(__file__).with_name('00_config.py')
-_spec = importlib.util.spec_from_file_location('cfg', _cfg_path)
-cfg = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(cfg)
+import os
+import config_master as cfg
 
 
 # -----------------------------
@@ -252,7 +246,7 @@ def load_rf_monthly_effective():
 
 def load_market_returns():
     mkt = {}
-    with open(cfg.MKT_FILE, newline='', encoding='utf-8-sig') as f:
+    with open(cfg.MKT_RETURNS_PATH, newline='', encoding='utf-8-sig') as f:
         r = csv.DictReader(f)
         for row in r:
             if row.get('Markettype') != '5':
@@ -268,12 +262,17 @@ def load_stock_panel():
     # monthly stock returns and market equity
     stock_ret = {}
     stock_size = {}
+    stock_mkt_type = {}  # To store Markettype
     stocks_by_month = defaultdict(list)
 
-    s_i = cfg.month_to_int('1990-12')
-    e_i = cfg.month_to_int(cfg.RETURN_END)
+    # Hardcoded for now, can be moved to config
+    RETURN_START = '1992-07'
+    RETURN_END = '2025-12'
 
-    with open(cfg.STOCK_FILE, newline='', encoding='utf-8-sig') as f:
+    s_i = month_to_int('1990-12')
+    e_i = month_to_int(RETURN_END)
+
+    with open(cfg.MKT_PRICES_PATH, newline='', encoding='utf-8-sig') as f:
         r = csv.DictReader(f)
         for row in r:
             mt = row.get('Markettype')
@@ -282,7 +281,7 @@ def load_stock_panel():
             m = row.get('Trdmnt')
             if not m:
                 continue
-            mi = cfg.month_to_int(m)
+            mi = month_to_int(m)
             if mi < s_i or mi > e_i:
                 continue
 
@@ -297,9 +296,10 @@ def load_stock_panel():
 
             stock_ret[(m, stk)] = rv
             stock_size[(m, stk)] = sv
+            stock_mkt_type[(m, stk)] = mt  # Store market type
             stocks_by_month[m].append(stk)
 
-    return stock_ret, stock_size, stocks_by_month
+    return stock_ret, stock_size, stock_mkt_type, stocks_by_month
 
 
 def load_book_equity_calendar_year():
@@ -308,7 +308,7 @@ def load_book_equity_calendar_year():
     be_map = defaultdict(dict)  # stk -> year -> be
     date_map = defaultdict(dict)  # stk -> year -> accper str
 
-    with open(cfg.BS_FILE, newline='', encoding='utf-8-sig') as f:
+    with open(cfg.BS_PATH, newline='', encoding='utf-8-sig') as f:
         r = csv.DictReader(f)
         for row in r:
             if row.get('Typrep') != 'A':
@@ -333,6 +333,34 @@ def load_book_equity_calendar_year():
                 be_map[stk][y] = bv
 
     return be_map
+
+
+# -----------------------------
+# Date helpers
+# -----------------------------
+def month_to_int(m):
+    y, mo = map(int, m.split('-'))
+    return y * 12 + mo - 1
+
+def prev_month(m):
+    y, mo = map(int, m.split('-'))
+    if mo == 1:
+        return f'{y-1:04d}-12'
+    return f'{y:04d}-{mo-1:02d}'
+
+def formation_year_for_return_month(m):
+    y, mo = map(int, m.split('-'))
+    return y if mo >= 7 else y - 1
+
+def all_months(start, end):
+    si = month_to_int(start)
+    ei = month_to_int(end)
+    out = []
+    for i in range(si, ei + 1):
+        y = i // 12
+        m = i % 12 + 1
+        out.append(f'{y:04d}-{m:02d}')
+    return out
 
 
 # -----------------------------
@@ -361,7 +389,19 @@ def assign_bins_rank(values, cuts):
     return out
 
 
-def build_formation_membership(stock_size, be_map):
+def assign_quintile_from_breakpoints(value, breakpoints):
+    if value <= breakpoints[0]:
+        return 1
+    elif value <= breakpoints[1]:
+        return 2
+    elif value <= breakpoints[2]:
+        return 3
+    elif value <= breakpoints[3]:
+        return 4
+    else:
+        return 5
+
+def build_formation_memberships_and_factors(stock_size, be_map, stock_mkt_type):
     # For each formation year t (June t), independent size and BM sorts
     # Size: ME June t (median split)
     # BM: BE(t-1) / ME Dec(t-1), 30/40/30 split
@@ -370,29 +410,33 @@ def build_formation_membership(stock_size, be_map):
     member_2x3 = defaultdict(dict)  # year -> stk -> leg code (SL, SM, SH, BL, BM, BH)
     member_5x5 = defaultdict(dict)  # year -> stk -> (size_q, bm_q)
     june_chars = []
+    annual_portfolio_stats = []
 
-    for y in range(1992, 2026):
+    for y in range(cfg.START_YEAR, cfg.END_YEAR + 1):
         june = f'{y:04d}-06'
         dec_prev = f'{y - 1:04d}-12'
 
-        size_items = []
-        bm_items = []
         rec = {}
-
+        
         # candidate stocks need June size and Dec-1 size and positive BE
         for (m, stk), june_size in stock_size.items():
             if m != june:
                 continue
+
             dec_size = stock_size.get((dec_prev, stk))
             be = be_map.get(stk, {}).get(y - 1)
+            
             if dec_size is None or dec_size <= 0:
                 continue
+
             if be is None or be <= 0:
                 continue
 
             bm = be / dec_size
             if bm <= 0:
                 continue
+
+            mkt_type = stock_mkt_type.get((june, stk))
 
             rec[stk] = {
                 'form_year': y,
@@ -401,23 +445,49 @@ def build_formation_membership(stock_size, be_map):
                 'size_dec_prev': dec_size,
                 'book_equity': be,
                 'be_me': bm,
+                'mkt_type': mkt_type
             }
-            size_items.append((stk, june_size))
-            bm_items.append((stk, bm))
 
         if not rec:
             continue
 
-        size_2 = assign_bins_rank(size_items, cuts=[0.5])
-        bm_3 = assign_bins_rank(bm_items, cuts=[0.3, 0.7])
+        # NYSE-style breakpoints for size
+        sse_firms = {stk: r for stk, r in rec.items() if r['mkt_type'] == '1'}
+        
+        if not sse_firms:
+            continue
 
-        size_5 = assign_bins_rank(size_items, cuts=[0.2, 0.4, 0.6, 0.8])
+        sse_me_values = [r['size_june'] for r in sse_firms.values()]
+        
+        size_breakpoints = [
+            sorted(sse_me_values)[int(p * len(sse_me_values))]
+            for p in [0.2, 0.4, 0.6, 0.8]
+        ]
+
+        # Assign all firms to size quintiles based on SSE breakpoints
+        for stk, r in rec.items():
+            r['size5'] = assign_quintile_from_breakpoints(r['size_june'], size_breakpoints)
+
+        # Traditional B/M sort within each size quintile
+        bm_items = []
+        for stk, r in rec.items():
+            bm_items.append((stk, r['be_me']))
+        
+        bm_3 = assign_bins_rank(bm_items, cuts=[0.3, 0.7])
         bm_5 = assign_bins_rank(bm_items, cuts=[0.2, 0.4, 0.6, 0.8])
+
+        # For 2x3 sort, we still need a simple median size split on all firms
+        size_items_all = [(stk, r['size_june']) for stk, r in rec.items()]
+        size_2 = assign_bins_rank(size_items_all, cuts=[0.5])
+
+        # For portfolio characteristics table
+        total_mkt_me_june = sum(r['size_june'] for r in rec.values())
+        port_stats = defaultdict(lambda: {'sum_me': 0, 'n_firms': 0})
 
         for stk, row in rec.items():
             s2 = size_2.get(stk)
             b3 = bm_3.get(stk)
-            s5 = size_5.get(stk)
+            s5 = row.get('size5')
             b5 = bm_5.get(stk)
 
             if s2 is not None and b3 is not None:
@@ -427,6 +497,8 @@ def build_formation_membership(stock_size, be_map):
 
             if s5 is not None and b5 is not None:
                 member_5x5[y][stk] = (s5, b5)
+                port_stats[(s5, b5)]['sum_me'] += row['size_june']
+                port_stats[(s5, b5)]['n_firms'] += 1
 
             june_chars.append({
                 'form_year': y,
@@ -441,15 +513,27 @@ def build_formation_membership(stock_size, be_map):
                 'size5': s5,
                 'bm5': b5,
             })
+        
+        for (s5, b5), stats in port_stats.items():
+            annual_portfolio_stats.append({
+                'year': y,
+                'size_quintile': s5,
+                'bm_quintile': b5,
+                'avg_me': stats['sum_me'] / stats['n_firms'] if stats['n_firms'] > 0 else 0,
+                'sum_me': stats['sum_me'],
+                'n_firms': stats['n_firms'],
+                'total_mkt_me': total_mkt_me_june,
+            })
 
-    return member_2x3, member_5x5, june_chars
+
+    return member_2x3, member_5x5, june_chars, annual_portfolio_stats
 
 
 # -----------------------------
 # Returns / factors
 # -----------------------------
 def value_weighted_return(stocks, month, stock_ret, stock_size):
-    pm = cfg.prev_month(month)
+    pm = prev_month(month)
     num = 0.0
     den = 0.0
     n_used = 0
@@ -459,6 +543,7 @@ def value_weighted_return(stocks, month, stock_ret, stock_size):
             continue
         w = stock_size.get((pm, stk))
         if w is None or w <= 0:
+            # If previous month's size is not available, use current month's size
             w = stock_size.get((month, stk))
         if w is None or w <= 0:
             continue
@@ -471,7 +556,7 @@ def value_weighted_return(stocks, month, stock_ret, stock_size):
 
 
 def build_monthly_series(member_2x3, member_5x5, stock_ret, stock_size, rf, mkt):
-    months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
+    months = all_months('1992-07', '2025-12')
 
     legs = ['SL', 'SM', 'SH', 'BL', 'BM', 'BH']
     leg_returns = {leg: {} for leg in legs}
@@ -483,16 +568,16 @@ def build_monthly_series(member_2x3, member_5x5, stock_ret, stock_size, rf, mkt)
     factor_rows = []
 
     for m in months:
-        fy = cfg.formation_year_for_return_month(m)
-        members_2x3 = member_2x3.get(fy, {})
-        members_5x5 = member_5x5.get(fy, {})
+        fy = formation_year_for_return_month(m)
+        members_2x3_for_year = member_2x3.get(fy, {})
+        members_5x5_for_year = member_5x5.get(fy, {})
 
         by_leg = defaultdict(list)
-        for stk, leg in members_2x3.items():
+        for stk, leg in members_2x3_for_year.items():
             by_leg[leg].append(stk)
 
         by_25 = defaultdict(list)
-        for stk, (sq, bq) in members_5x5.items():
+        for stk, (sq, bq) in members_5x5_for_year.items():
             by_25[(sq, bq)].append(stk)
 
         for leg in legs:
@@ -546,18 +631,50 @@ def build_monthly_series(member_2x3, member_5x5, stock_ret, stock_size, rf, mkt)
             'N_BH': leg_counts['BH'].get(m, 0),
         })
 
-    return factor_rows, leg_returns, leg_counts, port25_returns, port25_counts
+    return factor_rows, port25_returns, port25_counts
 
 
 # -----------------------------
 # Table builders (CSV rows)
 # -----------------------------
+def build_portfolio_characteristics(annual_stats):
+    ports = defaultdict(lambda: defaultdict(list))
+    for s in annual_stats:
+        k = (s['size_quintile'], s['bm_quintile'])
+        ports[k]['avg_me'].append(s['avg_me'])
+        ports[k]['n_firms'].append(s['n_firms'])
+        if s['total_mkt_me'] > 0:
+            pct_me = s['sum_me'] / s['total_mkt_me']
+            ports[k]['pct_me'].append(pct_me)
+
+    out = []
+    all_keys = sorted(ports.keys())
+
+    for size_q, bm_q in all_keys:
+        k = (size_q, bm_q)
+        if not ports[k]:
+            continue
+        
+        avg_me = mean(ports[k]['avg_me'])
+        avg_n = mean(ports[k]['n_firms'])
+        avg_pct = mean(ports[k]['pct_me'])
+
+        out.append({
+            'size_quintile': size_q,
+            'bm_quintile': bm_q,
+            'avg_me_rmb_mm': avg_me,
+            'avg_n_firms': avg_n,
+            'avg_me_pct_of_total': avg_pct * 100.0 if avg_pct is not None else None
+        })
+    return out
+
+
 def make_table_1_factor_summary(factor_rows):
     facs = ['MKT_RF', 'SMB', 'HML']
     out = []
     for f in facs:
         s = [r[f] for r in factor_rows if r[f] is not None]
-        mu, t = nw_tstat_mean(s, lag=cfg.NW_LAG)
+        mu, t = nw_tstat_mean(s, lag=12)
         sd = stdev_sample(s)
         sharpe = (mu / sd) if (mu is not None and sd not in (None, 0)) else None
         ac1 = autocorr1(s)
@@ -594,7 +711,7 @@ def make_table_3_six_portfolio_summary(factor_rows):
         s = [r[leg] for r in factor_rows if r[leg] is not None]
         mu = mean(s)
         sd = stdev_sample(s)
-        _, t = nw_tstat_mean(s, lag=cfg.NW_LAG)
+        _, t = nw_tstat_mean(s, lag=12)
         n_avg = mean([r.get(f'N_{leg}') for r in factor_rows if r.get(f'N_{leg}') is not None])
         out.append({
             'portfolio': leg,
@@ -609,7 +726,7 @@ def make_table_3_six_portfolio_summary(factor_rows):
 
 def make_table_4_port25_avg_excess(port25_returns, rf):
     out = []
-    months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
+    months = all_months('1992-07', '2025-12')
     for i in range(1, 6):
         for j in range(1, 6):
             s = []
@@ -631,7 +748,7 @@ def make_table_4_port25_avg_excess(port25_returns, rf):
 
 def make_table_5_regressions(port25_returns, rf, factor_rows):
     fac_map = {r['Trdmnt']: r for r in factor_rows}
-    months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
+    months = all_months('1992-07', '2025-12')
 
     out = []
     for i in range(1, 6):
@@ -655,7 +772,7 @@ def make_table_5_regressions(port25_returns, rf, factor_rows):
                 x2.append(fr['SMB'])
                 x3.append(fr['HML'])
 
-            res = ols_with_nw(y, [x1, x2, x3], lag=cfg.NW_LAG)
+            res = ols_with_nw(y, [x1, x2, x3], lag=12)
             if res is None:
                 continue
 
@@ -679,107 +796,6 @@ def make_table_5_regressions(port25_returns, rf, factor_rows):
     return out
 
 
-def make_table_6_alpha_diagnostics(reg_rows):
-    alphas = [r['alpha_pct'] for r in reg_rows if r.get('alpha_pct') is not None]
-    tvals = [r['nw12_t_alpha'] for r in reg_rows if r.get('nw12_t_alpha') is not None]
-
-    if not alphas:
-        return []
-
-    out = []
-    out.append({'metric': 'n_portfolios', 'value': len(alphas)})
-    out.append({'metric': 'mean_alpha_pct', 'value': sum(alphas) / len(alphas)})
-    out.append({'metric': 'mean_abs_alpha_pct', 'value': sum(abs(a) for a in alphas) / len(alphas)})
-    out.append({'metric': 'max_abs_alpha_pct', 'value': max(abs(a) for a in alphas)})
-
-    if tvals:
-        out.append({'metric': 'n_sig_10pct', 'value': sum(1 for t in tvals if abs(t) >= 1.645)})
-        out.append({'metric': 'n_sig_5pct', 'value': sum(1 for t in tvals if abs(t) >= 1.960)})
-        out.append({'metric': 'n_sig_1pct', 'value': sum(1 for t in tvals if abs(t) >= 2.576)})
-
-    return out
-
-
-def make_table_7_pricing_errors(reg_rows, port25_returns, rf, factor_rows):
-    fac_means = {
-        'MKT_RF': mean([r['MKT_RF'] for r in factor_rows if r['MKT_RF'] is not None]),
-        'SMB': mean([r['SMB'] for r in factor_rows if r['SMB'] is not None]),
-        'HML': mean([r['HML'] for r in factor_rows if r['HML'] is not None]),
-    }
-
-    reg_map = {(r['size_quintile'], r['bm_quintile']): r for r in reg_rows}
-    months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
-
-    out = []
-    errs = []
-    for i in range(1, 6):
-        for j in range(1, 6):
-            s = []
-            for m in months:
-                rv = port25_returns[(i, j)].get(m)
-                rf_m = rf.get(m)
-                if rv is None or rf_m is None:
-                    continue
-                s.append(rv - rf_m)
-            actual = mean(s)
-            reg = reg_map.get((i, j))
-            if reg is None:
-                continue
-
-            fitted = (
-                reg['beta_mkt'] * fac_means['MKT_RF']
-                + reg['beta_smb'] * fac_means['SMB']
-                + reg['beta_hml'] * fac_means['HML']
-            )
-            pe = None if (actual is None or fitted is None) else (actual - fitted)
-            if pe is not None:
-                errs.append(pe)
-
-            out.append({
-                'portfolio': f'S{i}B{j}',
-                'size_quintile': i,
-                'bm_quintile': j,
-                'actual_avg_excess_pct': None if actual is None else actual * 100.0,
-                'fitted_avg_excess_pct': None if fitted is None else fitted * 100.0,
-                'pricing_error_pct': None if pe is None else pe * 100.0,
-            })
-
-    rmse = None
-    mae = None
-    if errs:
-        rmse = math.sqrt(sum(e * e for e in errs) / len(errs))
-        mae = sum(abs(e) for e in errs) / len(errs)
-
-    out.append({
-        'portfolio': 'SUMMARY',
-        'size_quintile': '',
-        'bm_quintile': '',
-        'actual_avg_excess_pct': '',
-        'fitted_avg_excess_pct': '',
-        'pricing_error_pct': '',
-        'rmse_pct': '' if rmse is None else rmse * 100.0,
-        'mae_pct': '' if mae is None else mae * 100.0,
-    })
-
-    return out
-
-
-def make_table_8_factor_premia_significance(factor_rows):
-    facs = ['MKT_RF', 'SMB', 'HML']
-    out = []
-    for f in facs:
-        s = [r[f] for r in factor_rows if r[f] is not None]
-        mu, t = nw_tstat_mean(s, lag=cfg.NW_LAG)
-        out.append({
-            'factor': f,
-            'mean_monthly_pct': None if mu is None else mu * 100.0,
-            'nw12_tstat': t,
-            'signif': significance_from_t(t),
-            'n_months': len(s),
-        })
-    return out
-
-
 # -----------------------------
 # Output writers
 # -----------------------------
@@ -795,61 +811,33 @@ def main():
     print('Loading sources...')
     rf = load_rf_monthly_effective()
     mkt = load_market_returns()
-    stock_ret, stock_size, _ = load_stock_panel()
+    stock_ret, stock_size, stock_mkt_type, _ = load_stock_panel()
     be_map = load_book_equity_calendar_year()
 
     print('Building formation memberships...')
-    member_2x3, member_5x5, june_chars = build_formation_membership(stock_size, be_map)
+    member_2x3, member_5x5, june_chars, annual_stats = build_formation_memberships_and_factors(stock_size, be_map, stock_mkt_type)
 
-    print('Building monthly factor and portfolio series...')
-    factor_rows, leg_returns, leg_counts, port25_returns, port25_counts = build_monthly_series(
-        member_2x3, member_5x5, stock_ret, stock_size, rf, mkt
-    )
+    print('Building monthly series...')
+    series, port25, port25_counts = build_monthly_series(member_2x3, member_5x5, stock_ret, stock_size, rf, mkt)
 
-    print('Building 8 output tables...')
-    t1 = make_table_1_factor_summary(factor_rows)
-    t2 = make_table_2_factor_corr(factor_rows)
-    t3 = make_table_3_six_portfolio_summary(factor_rows)
-    t4 = make_table_4_port25_avg_excess(port25_returns, rf)
-    t5 = make_table_5_regressions(port25_returns, rf, factor_rows)
-    t6 = make_table_6_alpha_diagnostics(t5)
-    t7 = make_table_7_pricing_errors(t5, port25_returns, rf, factor_rows)
-    t8 = make_table_8_factor_premia_significance(factor_rows)
+    print('Writing portfolio characteristics...')
+    char_table = build_portfolio_characteristics(annual_stats)
+    if char_table:
+        fnames = list(char_table[0].keys())
+        write_csv(cfg.PORTFOLIO_CHARS_PATH, fnames, char_table)
 
-    print('Writing CSV outputs...')
-    # audit files
-    write_csv(
-        cfg.OUTPUT_DIR / 'ff3_june_characteristics.csv',
-        ['form_year', 'Stkcd', 'size_june', 'size_dec_prev', 'book_equity', 'be_me', 'size2', 'bm3', 'leg_2x3', 'size5', 'bm5'],
-        june_chars,
-    )
+    print('Writing factors...')
+    if series:
+        write_csv(cfg.FACTORS_PATH, series[0].keys(), series)
 
-    months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
-    leg_rows = []
-    for m in months:
-        row = {'Trdmnt': m}
-        for leg in ['SL', 'SM', 'SH', 'BL', 'BM', 'BH']:
-            row[leg] = leg_returns[leg].get(m)
-            row[f'N_{leg}'] = leg_counts[leg].get(m)
-        leg_rows.append(row)
-    write_csv(
-        cfg.OUTPUT_DIR / 'ff3_leg_returns.csv',
-        ['Trdmnt', 'SL', 'SM', 'SH', 'BL', 'BM', 'BH', 'N_SL', 'N_SM', 'N_SH', 'N_BL', 'N_BM', 'N_BH'],
-        leg_rows,
-    )
-
-    write_csv(
-        cfg.OUTPUT_DIR / 'ff3_factors_monthly.csv',
-        ['Trdmnt', 'RF', 'RM', 'MKT_RF', 'SMB', 'HML', 'SL', 'SM', 'SH', 'BL', 'BM', 'BH', 'N_SL', 'N_SM', 'N_SH', 'N_BL', 'N_BM', 'N_BH'],
-        factor_rows,
-    )
-
+    print('Writing monthly 25-portfolio panel...')
+    months = all_months('1992-07', '2025-12')
     port25_rows = []
     for m in months:
         rf_m = rf.get(m)
         for i in range(1, 6):
             for j in range(1, 6):
-                rv = port25_returns[(i, j)].get(m)
+                rv = port25[(i, j)].get(m)
                 n = port25_counts[(i, j)].get(m)
                 ex = (rv - rf_m) if (rv is not None and rf_m is not None) else None
                 port25_rows.append({
@@ -862,55 +850,39 @@ def main():
                     'n_stocks': n,
                 })
     write_csv(
-        cfg.OUTPUT_DIR / 'ff3_port25_monthly.csv',
+        os.path.join(cfg.OUTPUT_DIR, 'ff3_port25_monthly.csv'),
         ['Trdmnt', 'size_quintile', 'bm_quintile', 'portfolio', 'vw_return', 'excess_return', 'n_stocks'],
         port25_rows,
     )
 
-    # 8 core tables
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_1_factor_summary.csv',
-        ['factor', 'n_months', 'mean_monthly_pct', 'std_monthly_pct', 'nw12_tstat_mean', 'sharpe_monthly', 'autocorr1', 'annualized_mean_pct', 'annualized_vol_pct'],
-        t1,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_2_factor_correlation.csv',
-        ['row_factor', 'MKT_RF', 'SMB', 'HML'],
-        t2,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_3_six_portfolio_summary.csv',
-        ['portfolio', 'n_months', 'avg_monthly_return_pct', 'std_monthly_pct', 'nw12_tstat_mean', 'avg_n_stocks'],
-        t3,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_4_25port_avg_excess_returns.csv',
-        ['size_quintile', 'bm_quintile', 'avg_excess_return_pct', 'n_months'],
-        t4,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_5_25port_ff3_regressions.csv',
-        ['portfolio', 'size_quintile', 'bm_quintile', 'alpha_pct', 'beta_mkt', 'beta_smb', 'beta_hml', 'nw12_t_alpha', 'nw12_t_mkt', 'nw12_t_smb', 'nw12_t_hml', 'r2', 'n_months'],
-        t5,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_6_alpha_diagnostics.csv',
-        ['metric', 'value'],
-        t6,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_7_pricing_errors.csv',
-        ['portfolio', 'size_quintile', 'bm_quintile', 'actual_avg_excess_pct', 'fitted_avg_excess_pct', 'pricing_error_pct', 'rmse_pct', 'mae_pct'],
-        t7,
-    )
-    write_csv(
-        cfg.OUTPUT_DIR / 'table_8_factor_premia_significance.csv',
-        ['factor', 'mean_monthly_pct', 'nw12_tstat', 'signif', 'n_months'],
-        t8,
-    )
+    print('Writing tables...')
+    # Table 1: Summary stats
+    table1 = make_table_1_factor_summary(series)
+    if table1:
+        write_csv(os.path.join(cfg.OUTPUT_DIR, 'ff1993_table1_summary.csv'), table1[0].keys(), table1)
 
-    print('Done. Outputs written to:', cfg.OUTPUT_DIR)
+    # Table 2: Correlations
+    table2 = make_table_2_factor_corr(series)
+    if table2:
+        write_csv(os.path.join(cfg.OUTPUT_DIR, 'ff1993_table2_correlations.csv'), table2[0].keys(), table2)
+
+    # Table 3: Portfolio returns
+    table3 = make_table_3_six_portfolio_summary(series)
+    if table3:
+        write_csv(os.path.join(cfg.OUTPUT_DIR, 'ff1993_table3_portfolios.csv'), table3[0].keys(), table3)
+
+    # Table 4: 25 portfolio returns
+    table4 = make_table_4_port25_avg_excess(port25, rf)
+    if table4:
+        write_csv(os.path.join(cfg.OUTPUT_DIR, 'ff1993_table4_25portfolios.csv'), table4[0].keys(), table4)
+    
+    # Table 5: Regressions
+    table5 = make_table_5_regressions(port25, rf, series)
+    if table5:
+        write_csv(os.path.join(cfg.OUTPUT_DIR, 'ff1993_table5_regressions.csv'), table5[0].keys(), table5)
+
+    print('Done.')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
