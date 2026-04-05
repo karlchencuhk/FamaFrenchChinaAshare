@@ -268,6 +268,7 @@ def load_stock_panel():
     # monthly stock returns and market equity
     stock_ret = {}
     stock_size = {}
+    stock_mkt_type = {}
     stocks_by_month = defaultdict(list)
 
     s_i = cfg.month_to_int('1990-12')
@@ -297,9 +298,10 @@ def load_stock_panel():
 
             stock_ret[(m, stk)] = rv
             stock_size[(m, stk)] = sv
+            stock_mkt_type[(m, stk)] = mt
             stocks_by_month[m].append(stk)
 
-    return stock_ret, stock_size, stocks_by_month
+    return stock_ret, stock_size, stock_mkt_type, stocks_by_month
 
 
 def load_book_equity_calendar_year():
@@ -361,7 +363,20 @@ def assign_bins_rank(values, cuts):
     return out
 
 
-def build_formation_membership(stock_size, be_map):
+def assign_quintile_from_breakpoints(value, breakpoints):
+    if value <= breakpoints[0]:
+        return 1
+    elif value <= breakpoints[1]:
+        return 2
+    elif value <= breakpoints[2]:
+        return 3
+    elif value <= breakpoints[3]:
+        return 4
+    else:
+        return 5
+
+
+def build_formation_membership(stock_size, be_map, stock_mkt_type):
     # For each formation year t (June t), independent size and BM sorts
     # Size: ME June t (median split)
     # BM: BE(t-1) / ME Dec(t-1), 30/40/30 split
@@ -375,8 +390,6 @@ def build_formation_membership(stock_size, be_map):
         june = f'{y:04d}-06'
         dec_prev = f'{y - 1:04d}-12'
 
-        size_items = []
-        bm_items = []
         rec = {}
 
         # candidate stocks need June size and Dec-1 size and positive BE
@@ -394,6 +407,8 @@ def build_formation_membership(stock_size, be_map):
             if bm <= 0:
                 continue
 
+            mkt_type = stock_mkt_type.get((june, stk))
+
             rec[stk] = {
                 'form_year': y,
                 'Stkcd': stk,
@@ -401,23 +416,37 @@ def build_formation_membership(stock_size, be_map):
                 'size_dec_prev': dec_size,
                 'book_equity': be,
                 'be_me': bm,
+                'mkt_type': mkt_type,
             }
-            size_items.append((stk, june_size))
-            bm_items.append((stk, bm))
 
         if not rec:
             continue
 
-        size_2 = assign_bins_rank(size_items, cuts=[0.5])
-        bm_3 = assign_bins_rank(bm_items, cuts=[0.3, 0.7])
+        sse_firms = {stk: r for stk, r in rec.items() if r['mkt_type'] == '1'}
+        if not sse_firms:
+            continue
 
-        size_5 = assign_bins_rank(size_items, cuts=[0.2, 0.4, 0.6, 0.8])
+        sse_me_values = sorted([r['size_june'] for r in sse_firms.values()])
+        n_sse = len(sse_me_values)
+        size_breakpoints = [
+            sse_me_values[min(n_sse - 1, int(p * n_sse))]
+            for p in [0.2, 0.4, 0.6, 0.8]
+        ]
+
+        for stk, r in rec.items():
+            r['size5'] = assign_quintile_from_breakpoints(r['size_june'], size_breakpoints)
+
+        bm_items = [(stk, r['be_me']) for stk, r in rec.items()]
+        size_items_all = [(stk, r['size_june']) for stk, r in rec.items()]
+
+        size_2 = assign_bins_rank(size_items_all, cuts=[0.5])
+        bm_3 = assign_bins_rank(bm_items, cuts=[0.3, 0.7])
         bm_5 = assign_bins_rank(bm_items, cuts=[0.2, 0.4, 0.6, 0.8])
 
         for stk, row in rec.items():
             s2 = size_2.get(stk)
             b3 = bm_3.get(stk)
-            s5 = size_5.get(stk)
+            s5 = row.get('size5')
             b5 = bm_5.get(stk)
 
             if s2 is not None and b3 is not None:
@@ -795,11 +824,11 @@ def main():
     print('Loading sources...')
     rf = load_rf_monthly_effective()
     mkt = load_market_returns()
-    stock_ret, stock_size, _ = load_stock_panel()
+    stock_ret, stock_size, stock_mkt_type, _ = load_stock_panel()
     be_map = load_book_equity_calendar_year()
 
     print('Building formation memberships...')
-    member_2x3, member_5x5, june_chars = build_formation_membership(stock_size, be_map)
+    member_2x3, member_5x5, june_chars = build_formation_membership(stock_size, be_map, stock_mkt_type)
 
     print('Building monthly factor and portfolio series...')
     factor_rows, leg_returns, leg_counts, port25_returns, port25_counts = build_monthly_series(

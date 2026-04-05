@@ -2,7 +2,7 @@ from pathlib import Path
 
 # Project paths
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DATA_ROOT = PROJECT_ROOT.parents[0]
+DATA_ROOT = PROJECT_ROOT.parents[1] / 'Raw Data'
 OUTPUT_DIR = PROJECT_ROOT / 'output'
 OUTPUT_DIR.mkdir(exist_ok=True)
 
