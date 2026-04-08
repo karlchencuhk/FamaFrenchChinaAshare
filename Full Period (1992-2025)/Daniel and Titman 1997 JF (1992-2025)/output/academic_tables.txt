@@ -1,5 +1,23 @@
 # Daniel and Titman (1997) Style Tests — China 1992-2025
 
+## Table 1A. Mean Excess Monthly Return of 45 Portfolios (Size $\times$ BM $\times$ HML Loading)
+| Characteristic portfolio (SZ,BM) | HML loading portfolio 1 | 2 | 3 | 4 | 5 |
+| --- | --- | --- | --- | --- | --- |
+| SZ1BM1 | 1.653 | 1.515 | 1.427 | 2.006 | 1.410 |
+| SZ1BM2 | 1.681 | 2.273 | 1.917 | 1.915 | 1.703 |
+| SZ1BM3 | 2.243 | 1.850 | 1.883 | 1.723 | 2.070 |
+| SZ2BM1 | 0.843 | 1.038 | 0.897 | 0.850 | 0.772 |
+| SZ2BM2 | 1.218 | 1.555 | 1.612 | 1.089 | 1.119 |
+| SZ2BM3 | 1.802 | 1.361 | 1.288 | 1.260 | 1.352 |
+| SZ3BM1 | 0.415 | 0.367 | 0.767 | 0.770 | 0.461 |
+| SZ3BM2 | 0.536 | 0.925 | 0.752 | 1.107 | 0.584 |
+| SZ3BM3 | 1.125 | 0.807 | 1.206 | 1.113 | 0.769 |
+
+Notes:
+- Characteristic portfolios are formed on Size tercile and BM tercile: `SZ1BM1` ... `SZ3BM3`.
+- Within each characteristic portfolio and formation year, stocks are sorted into 5 portfolios by pre-formation $\beta^{HML}$ (1=low, 5=high).
+- Cell entries are value-weighted mean excess monthly returns in percent.
+
 ## Table 1. Daniel-Titman Characteristic-vs-Loading Tests (1992-2025)
 | Test family | Contrast | Group | Mean spread (%/mo) | NW12 t | Sig | N months |
 | --- | --- | --- | --- | --- | --- | --- |

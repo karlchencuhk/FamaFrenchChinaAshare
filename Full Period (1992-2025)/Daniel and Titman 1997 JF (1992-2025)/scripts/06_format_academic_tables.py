@@ -73,9 +73,45 @@ def table_fm_md():
     return '\n'.join(txt)
 
 
+def table_45port_md():
+    rows = read_csv(OUT / 'table_dt_45port_mean_excess.csv')
+
+    # Build wide table: rows = characteristic portfolio (SZxBM), cols = beta_HML quintile (1..5)
+    grid = {}
+    for r in rows:
+        cp = r['char_port']
+        q = int(r['beta_hml_q5'])
+        grid[(cp, q)] = f3(r['mean_excess_monthly_pct'])
+
+    char_ports = [f'SZ{s}BM{bm}' for s in (1, 2, 3) for bm in (1, 2, 3)]
+    headers = ['Characteristic portfolio (SZ,BM)', 'HML loading portfolio 1', '2', '3', '4', '5']
+    body = []
+    for cp in char_ports:
+        body.append([
+            cp,
+            grid.get((cp, 1), ''),
+            grid.get((cp, 2), ''),
+            grid.get((cp, 3), ''),
+            grid.get((cp, 4), ''),
+            grid.get((cp, 5), ''),
+        ])
+
+    txt = []
+    txt.append('## Table 1A. Mean Excess Monthly Return of 45 Portfolios (Size $\\times$ BM $\\times$ HML Loading)')
+    txt.append(markdown_table(headers, body))
+    txt.append('')
+    txt.append('Notes:')
+    txt.append('- Characteristic portfolios are formed on Size tercile and BM tercile: `SZ1BM1` ... `SZ3BM3`.')
+    txt.append('- Within each characteristic portfolio and formation year, stocks are sorted into 5 portfolios by pre-formation $\\beta^{HML}$ (1=low, 5=high).')
+    txt.append('- Cell entries are value-weighted mean excess monthly returns in percent.')
+    return '\n'.join(txt)
+
+
 def main():
     content = '\n'.join([
         '# Daniel and Titman (1997) Style Tests — China 1992-2025',
+        '',
+        table_45port_md(),
         '',
         table_dt_md(),
         '',
