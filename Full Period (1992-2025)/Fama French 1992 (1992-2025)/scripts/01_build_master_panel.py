@@ -82,6 +82,11 @@ def main():
     print('Loading annual BE (A statement)...')
     be_map = load_book_equity_a_statement()
 
+    # CSMAR-style market value fields are often stored in "thousand CNY".
+    # Empirically, treating Msmvttl as thousand CNY yields plausible shares outstanding
+    # (market value / price). We therefore scale to CNY here so that ME and BE are comparable.
+    ME_SCALE_TO_CNY = 1000.0
+
     keep_start = '1990-12'
     keep_end = cfg.RETURN_END
     s_i = cfg.month_to_int(keep_start)
@@ -121,7 +126,7 @@ def main():
             if not size:
                 continue
 
-            size_f = float(size)
+            size_f = float(size) * ME_SCALE_TO_CNY
             sr_f = float(sr) if sr else None
             rf_f = rf.get(m)
             mr_f = mkt.get(m)

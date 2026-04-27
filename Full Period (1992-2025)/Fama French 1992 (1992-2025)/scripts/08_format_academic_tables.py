@@ -1,4 +1,5 @@
 import csv
+import math
 from pathlib import Path
 from collections import defaultdict
 
@@ -17,6 +18,11 @@ def f3(x):
 
 def f4(x):
     return '' if x in (None, '') else f"{float(x):.4f}"
+
+def exp_level(x):
+    if x in (None, ''):
+        return ''
+    return math.exp(float(x))
 
 
 def star(t):
@@ -87,7 +93,7 @@ def build_table_ii_md():
     left = {r['portfolio']: r for r in srows}
     right = {r['portfolio']: r for r in brows}
 
-    headers = ['Decile', 'Average Return (%)', 'Post-ranking Beta', 'ln(ME)', 'ln(BE/ME)']
+    headers = ['Decile', 'Average Return (%)', 'Post-ranking Beta', 'ln(ME)', 'ln(BE/ME)', 'ME', 'BE/ME']
 
     rows_size = []
     for i in range(1, 11):
@@ -98,6 +104,8 @@ def build_table_ii_md():
             f4(sr.get('post_ranking_beta', '')),
             f4(sr.get('avg_ln_me', '')),
             f4(sr.get('avg_ln_be_me', '')),
+            f3(sr.get('avg_size', '')),
+            f4(exp_level(sr.get('avg_ln_be_me', ''))),
         ])
 
     rows_beta = []
@@ -109,6 +117,8 @@ def build_table_ii_md():
             f4(br.get('post_ranking_beta', '')),
             f4(br.get('avg_ln_me', '')),
             f4(br.get('avg_ln_be_me', '')),
+            f3(br.get('avg_size', '')),
+            f4(exp_level(br.get('avg_ln_be_me', ''))),
         ])
 
     txt = []
@@ -153,7 +163,7 @@ def build_table_iii_md():
 
 def build_table_iv_md():
     rows = read_csv(OUT / 'table_iv_beme_only.csv')
-    headers = ['BE/ME Decile', 'Avg Monthly Return (%)', 'Post-ranking Beta', 'ln(ME)', 'ln(BE/ME)']
+    headers = ['BE/ME Decile', 'Avg Monthly Return (%)', 'Post-ranking Beta', 'ln(ME)', 'ln(BE/ME)', 'ME', 'BE/ME']
     out = []
     for r in rows:
         d = r['portfolio'].replace('M', '')
@@ -163,6 +173,8 @@ def build_table_iv_md():
             f4(r.get('post_ranking_beta', '')),
             f4(r.get('avg_ln_me', '')),
             f4(r.get('avg_ln_be_me', '')),
+            f3(r.get('avg_size', '')),
+            f4(exp_level(r.get('avg_ln_be_me', ''))),
         ])
 
     txt = []

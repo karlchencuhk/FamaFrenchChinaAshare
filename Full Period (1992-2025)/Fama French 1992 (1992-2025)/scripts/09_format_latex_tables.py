@@ -21,6 +21,7 @@ Formatting features
 """
 
 import csv
+import math
 from pathlib import Path
 from collections import defaultdict
 
@@ -42,6 +43,9 @@ def f(x, d=3):
 
 def f3(x):  return f(x, 3)
 def f4(x):  return f(x, 4)
+
+def exp_level(x):
+    return '' if x in (None, '') else math.exp(float(x))
 
 
 def star(t):
@@ -120,8 +124,8 @@ def table_i_tex():
         b = int(r['beta_decile_within_size'])
         ret[s][b]   = f3(r['avg_monthly_return_pct'])
         pbeta[s][b] = f4(r['post_ranking_beta'])
-        # display avg size in RMB millions (original unit: RMB thousands)
-        avgsz[s][b] = f(float(r['avg_size']) / 1_000, 1) if r['avg_size'] else ''
+        # display avg size in RMB millions (avg_size stored in RMB)
+        avgsz[s][b] = f(float(r['avg_size']) / 1_000_000, 1) if r['avg_size'] else ''
 
     ncols = 11   # 1 label + 10 beta columns
     hdr   = ['Size $\\backslash$ $\\beta$'] + [f'B{j}' for j in range(1, 11)]
@@ -181,12 +185,12 @@ def table_ii_tex():
 
     # Build tabular manually to support panel headers
     tab_lines = []
-    tab_lines.append('\\begin{tabular}{lrrrr}')
+    tab_lines.append('\\begin{tabular}{lrrrrrr}')
     tab_lines.append('\\toprule')
 
-    tab_lines.append('\\multicolumn{5}{l}{\\textit{Panel A: Portfolios formed on size (ME)}} \\\\')
+    tab_lines.append('\\multicolumn{7}{l}{\\textit{Panel A: Portfolios formed on size (ME)}} \\\\')
     tab_lines.append('\\midrule')
-    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ \\\\')
+    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ & ME (RMB mn) & BE/ME \\\\')
     tab_lines.append('\\midrule')
     for i in range(1, 11):
         sr = left.get(f'S{i}', {})
@@ -196,13 +200,15 @@ def table_ii_tex():
             f4(sr.get('post_ranking_beta', '')),
             f4(sr.get('avg_ln_me', '')),
             f4(sr.get('avg_ln_be_me', '')),
+            f(float(sr['avg_size']) / 1_000_000, 1) if sr.get('avg_size') not in (None, '') else '',
+            f3(exp_level(sr.get('avg_ln_be_me', ''))),
         ]
         tab_lines.append(' & '.join(row) + ' \\\\')
 
     tab_lines.append('\\midrule')
-    tab_lines.append('\\multicolumn{5}{l}{\\textit{Panel B: Portfolios formed on pre-ranking beta}} \\\\')
+    tab_lines.append('\\multicolumn{7}{l}{\\textit{Panel B: Portfolios formed on pre-ranking beta}} \\\\')
     tab_lines.append('\\midrule')
-    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ \\\\')
+    tab_lines.append('Decile & Average Return (\\%) & Post-$\\beta$ & $\\ln(ME)$ & $\\ln(BE/ME)$ & ME (RMB mn) & BE/ME \\\\')
     tab_lines.append('\\midrule')
     for i in range(1, 11):
         br = right.get(f'B{i}', {})
@@ -212,6 +218,8 @@ def table_ii_tex():
             f4(br.get('post_ranking_beta', '')),
             f4(br.get('avg_ln_me', '')),
             f4(br.get('avg_ln_be_me', '')),
+            f(float(br['avg_size']) / 1_000_000, 1) if br.get('avg_size') not in (None, '') else '',
+            f3(exp_level(br.get('avg_ln_be_me', ''))),
         ]
         tab_lines.append(' & '.join(row) + ' \\\\')
 
@@ -338,10 +346,13 @@ def table_iv_tex():
                      f3(r['avg_monthly_return_pct']),
                      f4(r.get('post_ranking_beta', '')),
                      f4(r.get('avg_ln_me', '')),
-                     f4(r.get('avg_ln_be_me', ''))])
+                     f4(r.get('avg_ln_be_me', '')),
+                     f(float(r['avg_size']) / 1_000_000, 1) if r.get('avg_size') not in (None, '') else '',
+                     f3(exp_level(r.get('avg_ln_be_me', ''))),
+                     ])
 
-    tab = tabular_booktabs('crrrr',
-                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', 'Post-$\\beta$', '$\\ln(ME)$', '$\\ln(BE/ME)$'],
+    tab = tabular_booktabs('crrrrrr',
+                           ['BE/ME Decile', 'Avg Monthly Return (\\%)', 'Post-$\\beta$', '$\\ln(ME)$', '$\\ln(BE/ME)$', 'ME (RMB mn)', 'BE/ME'],
                            body)
     notes = [
         'Portfolios are formed in June of each year by sorting all stocks into '
