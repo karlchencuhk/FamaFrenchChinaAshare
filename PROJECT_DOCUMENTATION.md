@@ -942,7 +942,115 @@ Natural next steps, if the project continues, would be:
 
 ---
 
-## 18. Status of This Document
+## 18. Momentum Extension: FF3 + UMD (Carhart-style) for China (1992-2025)
+
+This section documents the new momentum extension implemented in:
+- `Full Period (1992-2025)/Fama French 1993 + Momentum (1992-2025)/`
+
+The momentum extension adds a fourth factor (`UMD`) to the existing China FF3 framework and evaluates FF4 versus FF3 on the same 25 size-BM test portfolios.
+
+### 18.1 Objective
+
+The momentum extension was designed to answer:
+- whether a robust medium-term momentum premium exists in China A-shares under FF-style implementation constraints
+- whether adding momentum improves the pricing performance of the FF3 model
+
+### 18.2 Implemented Method (Final Corrected Version)
+
+The final implementation uses a Carhart-style overlapping-cohort approach with value weighting and skip-month timing:
+
+1. **Candidate strategy grid**  
+   Formation/holding combinations are tested over:
+   - `J in {3, 6, 9, 12}`
+   - `K in {1, 3, 6, 9, 12}` (restricted to tested combinations in code output)
+   - `skip = 1` month
+
+2. **Momentum score at formation month `f`**  
+   For each stock, the score is the cumulative return over the prior `J` months ending at `f-1`, with one-month skip:
+   - score window: `f-J-skip+1` through `f-skip`
+
+3. **Winner/loser assignment**  
+   Stocks are ranked by momentum score each formation month and split into:
+   - top decile winners
+   - bottom decile losers
+
+4. **Value-weighted cohort return (critical implementation detail)**  
+   For each formation cohort:
+   - market equity weights are fixed at the **formation month** (`ME_f`)
+   - monthly cohort return at month `t` uses those fixed formation weights applied to month-`t` stock returns
+   - this avoids look-ahead and avoids reweighting each month inside the same cohort
+
+5. **Overlapping portfolios for `K > 1`**  
+   Monthly UMD at time `t` is computed from the average of active cohorts formed at:
+   - `t, t-1, ..., t-K+1`
+   Then:
+   - `UMD_t = average(active winner cohort returns) - average(active loser cohort returns)`
+
+6. **FF4 construction and model tests**  
+   The final factor set is:
+   - `MKT_RF`, `SMB`, `HML` (from existing FF3 pipeline)
+   - `UMD` (new momentum factor)
+
+   FF3 and FF4 are both run on the same 25 size-BM test portfolios with Newey-West (`lag=12`) inference.
+
+### 18.3 Assumptions and Design Choices
+
+- **Universe:** A-share universe consistent with existing scripts (`Markettype in {'1','4'}`).
+- **Return units:** returns are treated as decimals (e.g., `0.05` = 5% monthly).
+- **Market equity scaling:** `Msmvttl` is scaled to CNY consistently with project-wide size treatment.
+- **Weighting:** momentum portfolios use **value weights based on formation-month ME** (not equal-weighted baseline).
+- **Missingness handling:** stocks with missing required score-window returns or missing required ME are skipped.
+- **Inference:** all mean-factor and regression inference uses `NW_LAG = 12`.
+- **Drawdown metric:** momentum strategy drawdown is computed from compounded wealth path:
+  - cumulative wealth `W_t = Π(1 + r_t)`
+  - drawdown `DD_t = (W_t - peak_t)/peak_t`
+  - bounded in `[-1, 0]`
+
+### 18.4 Momentum Findings (Current Corrected Run)
+
+From:
+- `output_ff1993_momentum/academic_tables_momentum.md`
+- `output_ff1993_momentum/table_alpha_comparison.csv`
+
+Key findings:
+
+1. **Momentum exists economically, with modest statistical strength**
+   - Best strategy in current run: `9/6`
+   - Mean UMD around `0.56%` monthly
+   - NW t-stat around `1.76` (below strict 5% threshold, but directionally meaningful)
+
+2. **Magnitude is plausible after code correction**
+   - Winner and loser portfolio means are now around low single-digit monthly returns (roughly ~1% range), not implausible double-digit values.
+   - UMD volatility and means are in realistic ranges relative to China equity factor behavior.
+
+3. **UMD improves model fit slightly but not dramatically**
+   - FF4 generally increases average `R^2` versus FF3.
+   - RMSE of portfolio alphas improves modestly.
+   - Significant alpha counts are mixed (improvement is not uniform across all diagnostics).
+
+4. **Overall interpretation**
+   - Adding momentum helps at the margin for pricing errors, but does not fully resolve FF3 residual mispricing.
+   - The strongest and most stable project-wide factor remains size (`SMB` / size-related effects), with momentum as a useful but not dominant extension.
+
+### 18.5 Momentum Output Files
+
+Core momentum outputs include:
+- `output_ff1993_momentum/momentum_optimization.csv`
+- `output_ff1993_momentum/table_momentum_optimization.csv`
+- `output_ff1993_momentum/umd_factor_monthly.csv`
+- `output_ff1993_momentum/ff4_factors_monthly.csv`
+- `output_ff1993_momentum/ff4_factor_summary.csv`
+- `output_ff1993_momentum/ff4_factor_correlation.csv`
+- `output_ff1993_momentum/table_25port_ff4_regressions.csv`
+- `output_ff1993_momentum/table_alpha_comparison.csv`
+- `output_ff1993_momentum/momentum_subperiod_analysis.csv`
+- `output_ff1993_momentum/momentum_selection_rationale.md`
+- `output_ff1993_momentum/academic_tables_momentum.md`
+- `output_ff1993_momentum/academic_tables_momentum.tex`
+
+---
+
+## 19. Status of This Document
 
 This document is based on the scripts and output files currently present in the workspace and is intended to serve as a detailed project memo / research record. It is written to be used as:
 - a project summary
