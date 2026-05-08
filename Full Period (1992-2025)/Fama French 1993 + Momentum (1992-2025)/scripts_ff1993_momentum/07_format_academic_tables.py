@@ -47,7 +47,7 @@ def table_momentum_opt():
                 f3(r["avg_loser_return_pct"]),
             ]
         )
-    return "## Table 1. Momentum Strategy Optimization\n" + md_table(headers, body)
+    return "## Table M1 (Momentum): Strategy Optimization\n" + md_table(headers, body)
 
 
 def table_factor_summary():
@@ -59,41 +59,58 @@ def table_factor_summary():
     h2 = ["Factor", "MKT_RF", "SMB", "HML", "UMD"]
     b2 = [[r["row_factor"], f3(r["MKT_RF"]), f3(r["SMB"]), f3(r["HML"]), f3(r["UMD"])] for r in corr]
     return (
-        "## Table 2. Factor Summary Including Momentum\n"
-        + "### Panel A: Summary Statistics\n"
+        "## Table 2 (FF4-aligned): Factor Summary Including Momentum\n"
         + md_table(h1, b1)
-        + "\n\n### Panel B: Correlation Matrix\n"
+        + "\n\n## Table 2 (FF4-aligned): Factor Correlation Matrix\n"
         + md_table(h2, b2)
     )
 
 
 def table_regressions():
     rows = read_csv(cfg.OUTPUT_DIR / "table_25port_ff4_regressions.csv")
-    headers = ["Size", "BM", "alpha_FF3 (%)", "t(alpha_FF3)", "alpha_FF4 (%)", "t(alpha_FF4)", "beta_UMD", "t(beta_UMD)", "R2_FF3", "R2_FF4"]
-    body = []
-    for r in rows:
-        body.append(
-            [
-                str(r["size_quintile"]),
-                str(r["bm_quintile"]),
-                f3(r["alpha_ff3_pct"]),
-                f3(r["t_alpha_ff3"]),
-                f3(r["alpha_ff4_pct"]),
-                f3(r["t_alpha_ff4"]),
-                f4(r["beta_umd"]),
-                f3(r["t_beta_umd"]),
-                f3(r["r2_ff3"]),
-                f3(r["r2_ff4"]),
-            ]
-        )
-    return "## Table 3. FF4 Regressions on 25 Size-BM Portfolios\n" + md_table(headers, body)
+    grid = {(int(r["size_quintile"]), int(r["bm_quintile"])): r for r in rows}
+    hdr = ["Size\\BM"] + [f"BM{j}" for j in range(1, 6)]
+
+    def panel(field, formatter):
+        body = []
+        for i in range(1, 6):
+            body.append([f"S{i}"] + [formatter(grid[(i, j)].get(field, "")) for j in range(1, 6)])
+        return md_table(hdr, body)
+
+    txt = []
+    txt.append("## Table 6a (FF4-aligned): Stock Regressions on MKT_RF, SMB, HML, UMD")
+    txt.append("")
+    txt.append("#### Panel A: FF3 Alpha (%)")
+    txt.append(panel("alpha_ff3_pct", f3))
+    txt.append("")
+    txt.append("#### Panel B: t-statistic for FF3 Alpha")
+    txt.append(panel("t_alpha_ff3", f3))
+    txt.append("")
+    txt.append("#### Panel C: FF4 Alpha (%)")
+    txt.append(panel("alpha_ff4_pct", f3))
+    txt.append("")
+    txt.append("#### Panel D: t-statistic for FF4 Alpha")
+    txt.append(panel("t_alpha_ff4", f3))
+    txt.append("")
+    txt.append("#### Panel E: UMD Loading (u_umd)")
+    txt.append(panel("beta_umd", f4))
+    txt.append("")
+    txt.append("#### Panel F: t-statistic for UMD Loading")
+    txt.append(panel("t_beta_umd", f3))
+    txt.append("")
+    txt.append("#### Panel G: R-squared (FF3)")
+    txt.append(panel("r2_ff3", f3))
+    txt.append("")
+    txt.append("#### Panel H: R-squared (FF4)")
+    txt.append(panel("r2_ff4", f3))
+    return "\n".join(txt)
 
 
 def table_model_compare():
     rows = read_csv(cfg.OUTPUT_DIR / "table_alpha_comparison.csv")
     headers = ["Metric", "FF3", "FF4", "Improvement"]
     body = [[r["metric"], f3(r["ff3"]), f3(r["ff4"]), f3(r["improvement"])] for r in rows]
-    return "## Table 4. Model Comparison: FF3 vs FF4\n" + md_table(headers, body)
+    return "## Table 9c (FF4-aligned): Alpha Diagnostics Comparison (FF3 vs FF4)\n" + md_table(headers, body)
 
 
 def make_tex_from_md(md_text):
@@ -116,7 +133,7 @@ def make_tex_from_md(md_text):
 
 def main():
     sections = [
-        "# Fama-French 1993 + Momentum (Carhart-style FF4) Tables",
+        "# FF4-Aligned Tables (Full Period, Stock-side focus)",
         "",
         table_momentum_opt(),
         "",
