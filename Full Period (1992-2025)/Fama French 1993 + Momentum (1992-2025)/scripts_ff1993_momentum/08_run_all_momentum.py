@@ -10,6 +10,7 @@ SCRIPTS = [
     "04_run_ff4_regressions.py",
     "05_alpha_diagnostics.py",
     "06_subperiod_analysis.py",
+    "09_validate_and_robustness.py",
     "07_format_academic_tables.py",
 ]
 

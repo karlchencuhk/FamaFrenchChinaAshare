@@ -2,7 +2,7 @@ import csv
 import importlib.util
 from pathlib import Path
 
-from momentum_utils import load_stock_panel, compute_umd_for_strategy
+from momentum_utils import load_stock_panel, compute_umd_2x3_for_strategy
 
 _cfg_path = Path(__file__).with_name("00_config.py")
 _spec = importlib.util.spec_from_file_location("cfg", _cfg_path)
@@ -28,7 +28,7 @@ def main():
 
     months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
     stock_ret, stock_size, _, by_month_stocks = load_stock_panel()
-    umd, wret, lret = compute_umd_for_strategy(
+    umd, high_ret, low_ret = compute_umd_2x3_for_strategy(
         months, stock_ret, stock_size, by_month_stocks, j, k, skip=cfg.MOM_SKIP_MONTH
     )
 
@@ -38,8 +38,8 @@ def main():
             {
                 "Trdmnt": m,
                 "UMD": umd.get(m),
-                "winner_ret": wret.get(m),
-                "loser_ret": lret.get(m),
+                "winner_ret": high_ret.get(m),
+                "loser_ret": low_ret.get(m),
                 "J": j,
                 "K": k,
                 "skip": cfg.MOM_SKIP_MONTH,
@@ -80,6 +80,7 @@ def main():
         "### Rationale:",
         "- We report the full J/K grid and emphasize robustness across specifications.",
         "- A pre-specified benchmark is used only as an operational input to build a single FF4 factor series.",
+        "- The FF4 UMD leg is constructed in Carhart style: UMD = 0.5*(Small High + Big High) - 0.5*(Small Low + Big Low).",
         "- For FF4 construction, we use a pre-specified benchmark momentum strategy.",
         "- This separates model evaluation from in-sample strategy tuning.",
         "",

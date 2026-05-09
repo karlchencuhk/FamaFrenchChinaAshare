@@ -78,6 +78,34 @@ def table_factor_summary():
     )
 
 
+def table_robustness_variants():
+    rows = read_csv(cfg.OUTPUT_DIR / "momentum_robustness_variants.csv")
+    headers = [
+        "Construction", "Weighting", "Breakpoints", "J/K", "Mean UMD (%)", "t-stat", "Sharpe", "Positive %", "Max DD (%)"
+    ]
+    body = []
+    for r in rows:
+        body.append(
+            [
+                r["construction"],
+                r["weighting"],
+                r["momentum_breakpoints"],
+                f'{r["J"]}/{r["K"]}',
+                f3(r["mean_umd_pct"]),
+                f3(r["nw12_tstat"]),
+                f3(r["sharpe"]),
+                f3(r["positive_months_pct"]),
+                f3(r["max_drawdown_pct"]),
+            ]
+        )
+    return (
+        "## Table M3 (Momentum): Construction and Robustness Variants\n"
+        + md_table(headers, body)
+        + "\n\nNote: Variants include requested side-by-side checks for 2x3 vs decile WML, value- vs equal-weighting, 30/70 vs 20/80 momentum breakpoints, and benchmark horizons 12/1 and 12/3."
+        + "\n\nSelected operational variant for FF4 in this run: carhart_2x3, value_weighted, 30/70 breakpoints, J/K=12/3."
+    )
+
+
 def table_event_time_performance():
     # JT-style event-time performance profile: average Buy-Sell return at t=1..36 after formation.
     horizon = 36
@@ -197,6 +225,8 @@ def main():
         table_momentum_opt(),
         "",
         table_event_time_performance(),
+        "",
+        table_robustness_variants(),
         "",
         table_factor_summary(),
         "",

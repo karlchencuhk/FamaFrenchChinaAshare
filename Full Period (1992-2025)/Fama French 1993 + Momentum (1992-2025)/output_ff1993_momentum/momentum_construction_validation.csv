@@ -1,0 +1,8 @@
+check,value
+carhart_timing_j,12
+carhart_timing_skip,1
+sample_formation_month,2000-06
+score_start_month,1999-06
+score_end_month,2000-05
+first_holding_month,2000-06
+no_look_ahead_pass,true

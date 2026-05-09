@@ -214,7 +214,7 @@ def basket_return(stocks, month, stock_ret, stock_size, weighting):
     return value_weighted_return(stocks, month, stock_ret, stock_size)
 
 
-def compute_umd_for_strategy(months, stock_ret, stock_size, by_month_stocks, j, k, skip=1):
+def compute_umd_for_strategy(months, stock_ret, stock_size, by_month_stocks, j, k, skip=1, weighting=None, deciles=None):
     # Cohort formed at month f uses formation-month ME weights.
     # Monthly series at t is average of K overlapping cohorts formed at t, t-1, ..., t-K+1.
     cohorts = {}
@@ -222,10 +222,13 @@ def compute_umd_for_strategy(months, stock_ret, stock_size, by_month_stocks, j, 
     loser_now = {}
     umd = {}
 
+    weighting_local = weighting or cfg.MOM_WEIGHTING
+    deciles_local = deciles or cfg.MOM_DECILES
+
     for m in months:
         scores = compute_momentum_scores(stock_ret, by_month_stocks, m, j, skip)
-        winners, losers = pick_winners_losers(scores, deciles=cfg.MOM_DECILES)
-        if cfg.MOM_WEIGHTING == "equal_weighted":
+        winners, losers = pick_winners_losers(scores, deciles=deciles_local)
+        if weighting_local == "equal_weighted":
             cohorts[m] = (winners, losers)
         else:
             ww = formation_weights(winners, m, stock_size)
@@ -243,7 +246,7 @@ def compute_umd_for_strategy(months, stock_ret, stock_size, by_month_stocks, j, 
             if cohort is None:
                 continue
             win_obj, lose_obj = cohort
-            if cfg.MOM_WEIGHTING == "equal_weighted":
+            if weighting_local == "equal_weighted":
                 wr = equal_weighted_return(win_obj, m, stock_ret)
                 lr = equal_weighted_return(lose_obj, m, stock_ret)
             else:
@@ -261,6 +264,119 @@ def compute_umd_for_strategy(months, stock_ret, stock_size, by_month_stocks, j, 
         umd[m] = (wret - lret) if (wret is not None and lret is not None) else None
 
     return umd, winner_now, loser_now
+
+
+def compute_umd_2x3_for_strategy(
+    months,
+    stock_ret,
+    stock_size,
+    by_month_stocks,
+    j,
+    k,
+    skip=1,
+    weighting=None,
+    mom_low_q=0.3,
+    mom_high_q=0.7,
+):
+    # Carhart/FF-style momentum factor with independent size and momentum sorts:
+    # UMD_t = 0.5*(SH_t + BH_t) - 0.5*(SL_t + BL_t).
+    cohorts = {}
+    high_now = {}
+    low_now = {}
+    umd = {}
+
+    weighting_local = weighting or cfg.MOM_WEIGHTING
+
+    for m in months:
+        scores = compute_momentum_scores(stock_ret, by_month_stocks, m, j, skip)
+        eligible = []
+        for stk, sc in scores.items():
+            me = stock_size.get((m, stk))
+            if me is None or me <= 0:
+                continue
+            eligible.append((stk, sc, me))
+        if len(eligible) < 6:
+            cohorts[m] = None
+            continue
+
+        # Independent breakpoints at formation month.
+        size_vals = sorted(v[2] for v in eligible)
+        n = len(size_vals)
+        size_median = size_vals[(n - 1) // 2]
+
+        score_vals = sorted(v[1] for v in eligible)
+        low_idx = max(0, int(mom_low_q * n) - 1)
+        high_idx = min(n - 1, int(mom_high_q * n))
+        mom_low_bp = score_vals[low_idx]
+        mom_high_bp = score_vals[high_idx]
+
+        sh, bh, sl, bl = [], [], [], []
+        for stk, sc, me in eligible:
+            is_small = me <= size_median
+            if sc <= mom_low_bp:
+                if is_small:
+                    sl.append(stk)
+                else:
+                    bl.append(stk)
+            elif sc >= mom_high_bp:
+                if is_small:
+                    sh.append(stk)
+                else:
+                    bh.append(stk)
+
+        if weighting_local == "equal_weighted":
+            cohorts[m] = (sh, bh, sl, bl)
+        else:
+            cohorts[m] = (
+                formation_weights(sh, m, stock_size),
+                formation_weights(bh, m, stock_size),
+                formation_weights(sl, m, stock_size),
+                formation_weights(bl, m, stock_size),
+            )
+
+    for m in months:
+        sh_legs, bh_legs, sl_legs, bl_legs = [], [], [], []
+        m_i = cfg.month_to_int(m)
+        for lag in range(k):
+            f_i = m_i - lag
+            f_m = cfg.int_to_month(f_i)
+            cohort = cohorts.get(f_m)
+            if cohort is None:
+                continue
+            sh_obj, bh_obj, sl_obj, bl_obj = cohort
+
+            if weighting_local == "equal_weighted":
+                r_sh = equal_weighted_return(sh_obj, m, stock_ret)
+                r_bh = equal_weighted_return(bh_obj, m, stock_ret)
+                r_sl = equal_weighted_return(sl_obj, m, stock_ret)
+                r_bl = equal_weighted_return(bl_obj, m, stock_ret)
+            else:
+                r_sh = weighted_month_return_from_weights(sh_obj, m, stock_ret)
+                r_bh = weighted_month_return_from_weights(bh_obj, m, stock_ret)
+                r_sl = weighted_month_return_from_weights(sl_obj, m, stock_ret)
+                r_bl = weighted_month_return_from_weights(bl_obj, m, stock_ret)
+
+            if r_sh is not None:
+                sh_legs.append(r_sh)
+            if r_bh is not None:
+                bh_legs.append(r_bh)
+            if r_sl is not None:
+                sl_legs.append(r_sl)
+            if r_bl is not None:
+                bl_legs.append(r_bl)
+
+        sh_t = mean(sh_legs)
+        bh_t = mean(bh_legs)
+        sl_t = mean(sl_legs)
+        bl_t = mean(bl_legs)
+
+        high_t = mean([v for v in (sh_t, bh_t) if v is not None])
+        low_t = mean([v for v in (sl_t, bl_t) if v is not None])
+        high_now[m] = high_t
+        low_now[m] = low_t
+        umd[m] = (high_t - low_t) if (high_t is not None and low_t is not None) else None
+
+    return umd, high_now, low_now
 
 
 def invert_matrix(a):

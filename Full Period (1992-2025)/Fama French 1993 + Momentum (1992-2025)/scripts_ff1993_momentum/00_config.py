@@ -33,7 +33,7 @@ MOM_STRATEGIES = [
 ]
 # Operational benchmark (chosen a priori, not optimized in-sample)
 MOM_BENCHMARK_J = 12
-MOM_BENCHMARK_K = 1
+MOM_BENCHMARK_K = 3
 
 # UMD construction parameters
 MOM_DECILES = 10  # top and bottom deciles

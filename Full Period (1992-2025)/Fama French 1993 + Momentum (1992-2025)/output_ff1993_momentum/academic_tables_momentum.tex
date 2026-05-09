@@ -63,21 +63,41 @@ Note: Consistent with Jegadeesh-Titman style reporting, the J/K grid is presente
 
 Note: Event-time returns are equal-weighted Buy-Sell decile spreads formed with J=12 and skip=1; t=1..36 months after formation.
 
+\subsection*{Table M3 (Momentum): Construction and Robustness Variants}
+\texttt{| Construction | Weighting | Breakpoints | J/K | Mean UMD (\%) | t-stat | Sharpe | Positive \% | Max DD (\%) |}\\
+\texttt{| --- | --- | --- | --- | --- | --- | --- | --- | --- |}\\
+\texttt{| decile\_wml | value\_weighted | 10/90 | 12/1 | 0.760 | 1.713 | 0.085 | 57.214 | -82.006 |}\\
+\texttt{| decile\_wml | equal\_weighted | 10/90 | 12/1 | -0.091 | -0.215 | -0.011 | 48.010 | -94.871 |}\\
+\texttt{| decile\_wml | value\_weighted | 10/90 | 12/3 | 0.594 | 1.429 | 0.071 | 55.224 | -82.989 |}\\
+\texttt{| decile\_wml | equal\_weighted | 10/90 | 12/3 | 0.226 | 0.554 | 0.028 | 49.751 | -86.250 |}\\
+\texttt{| carhart\_2x3 | value\_weighted | 30/70 | 12/1 | -0.597 | -2.645 | -0.097 | 46.269 | -98.091 |}\\
+\texttt{| carhart\_2x3 | equal\_weighted | 30/70 | 12/1 | -0.754 | -3.446 | -0.126 | 44.030 | -98.906 |}\\
+\texttt{| carhart\_2x3 | value\_weighted | 20/80 | 12/1 | -0.896 | -3.109 | -0.125 | 45.771 | -99.854 |}\\
+\texttt{| carhart\_2x3 | equal\_weighted | 20/80 | 12/1 | -1.077 | -4.052 | -0.154 | 43.781 | -99.917 |}\\
+\texttt{| carhart\_2x3 | value\_weighted | 30/70 | 12/3 | -0.177 | -0.775 | -0.030 | 49.254 | -85.348 |}\\
+\texttt{| carhart\_2x3 | equal\_weighted | 30/70 | 12/3 | -0.220 | -1.048 | -0.039 | 48.010 | -87.419 |}\\
+\texttt{| carhart\_2x3 | value\_weighted | 20/80 | 12/3 | -0.323 | -1.085 | -0.046 | 49.502 | -97.268 |}\\
+\texttt{| carhart\_2x3 | equal\_weighted | 20/80 | 12/3 | -0.374 | -1.342 | -0.054 | 48.756 | -97.493 |}\\
+
+Note: Variants include requested side-by-side checks for 2x3 vs decile WML, value- vs equal-weighting, 30/70 vs 20/80 momentum breakpoints, and benchmark horizons 12/1 and 12/3.
+
+Selected operational variant for FF4 in this run: carhart\_2x3, value\_weighted, 30/70 breakpoints, J/K=12/3.
+
 \subsection*{Table 2 (FF4-aligned): Factor Summary Including Momentum}
 \texttt{| Factor | Mean (\%) | Std (\%) | t-stat | Sharpe | Min (\%) | Max (\%) | \% Positive |}\\
 \texttt{| --- | --- | --- | --- | --- | --- | --- | --- |}\\
 \texttt{| MKT\_RF | 0.674 | 10.627 | 1.337 | 0.063 | -28.668 | 119.088 | 51.244 |}\\
 \texttt{| SMB | 0.860 | 5.416 | 3.121 | 0.159 | -17.453 | 25.984 | 55.970 |}\\
 \texttt{| HML | 0.417 | 5.018 | 1.644 | 0.083 | -30.021 | 28.917 | 55.224 |}\\
-\texttt{| UMD | 0.760 | 8.929 | 1.713 | 0.085 | -59.985 | 36.323 | 57.214 |}\\
+\texttt{| UMD | -0.177 | 5.863 | -0.775 | -0.030 | -64.313 | 28.005 | 49.254 |}\\
 
 \subsection*{Table 2 (FF4-aligned): Factor Correlation Matrix}
 \texttt{| Factor | MKT\_RF | SMB | HML | UMD |}\\
 \texttt{| --- | --- | --- | --- | --- |}\\
-\texttt{| MKT\_RF | 1.000 | 0.332 | -0.235 | -0.059 |}\\
-\texttt{| SMB | 0.332 | 1.000 | -0.224 | -0.291 |}\\
-\texttt{| HML | -0.235 | -0.224 | 1.000 | 0.098 |}\\
-\texttt{| UMD | -0.059 | -0.291 | 0.098 | 1.000 |}\\
+\texttt{| MKT\_RF | 1.000 | 0.332 | -0.235 | -0.003 |}\\
+\texttt{| SMB | 0.332 | 1.000 | -0.224 | -0.258 |}\\
+\texttt{| HML | -0.235 | -0.224 | 1.000 | 0.172 |}\\
+\texttt{| UMD | -0.003 | -0.258 | 0.172 | 1.000 |}\\
 
 \subsection*{Table 6a (FF4-aligned): Stock Regressions on MKT\_RF, SMB, HML, UMD}
 
@@ -102,38 +122,38 @@ Note: Event-time returns are equal-weighted Buy-Sell decile spreads formed with 
 #### Panel C: FF4 Alpha (\%)
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
 \texttt{| --- | --- | --- | --- | --- | --- |}\\
-\texttt{| S1 | 0.241 | 0.537 | 0.438 | 0.720 | 0.439 |}\\
-\texttt{| S2 | -0.147 | 0.389 | 0.076 | 0.029 | 0.042 |}\\
-\texttt{| S3 | -0.240 | -0.165 | 0.052 | -0.030 | -0.164 |}\\
-\texttt{| S4 | -0.194 | -0.033 | 0.210 | -0.190 | -0.095 |}\\
-\texttt{| S5 | 0.078 | 0.180 | 0.177 | 0.213 | 0.067 |}\\
+\texttt{| S1 | 0.250 | 0.450 | 0.428 | 0.928 | 0.467 |}\\
+\texttt{| S2 | -0.201 | 0.421 | 0.019 | 0.020 | 0.159 |}\\
+\texttt{| S3 | -0.211 | -0.183 | 0.032 | 0.042 | -0.167 |}\\
+\texttt{| S4 | 0.038 | -0.106 | -0.015 | -0.184 | -0.171 |}\\
+\texttt{| S5 | 0.184 | 0.262 | 0.215 | 0.177 | 0.051 |}\\
 
 #### Panel D: t-statistic for FF4 Alpha
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
 \texttt{| --- | --- | --- | --- | --- | --- |}\\
-\texttt{| S1 | 1.335 | 3.362 | 2.557 | 2.865 | 2.082 |}\\
-\texttt{| S2 | -1.161 | 1.952 | 0.482 | 0.227 | 0.246 |}\\
-\texttt{| S3 | -1.548 | -1.079 | 0.316 | -0.156 | -1.366 |}\\
-\texttt{| S4 | -1.101 | -0.182 | 0.703 | -1.244 | -0.614 |}\\
-\texttt{| S5 | 0.478 | 0.919 | 0.804 | 0.964 | 0.528 |}\\
+\texttt{| S1 | 1.377 | 2.896 | 2.342 | 3.241 | 1.996 |}\\
+\texttt{| S2 | -1.681 | 1.898 | 0.106 | 0.160 | 0.943 |}\\
+\texttt{| S3 | -1.542 | -1.123 | 0.179 | 0.232 | -1.330 |}\\
+\texttt{| S4 | 0.198 | -0.576 | -0.063 | -1.100 | -1.180 |}\\
+\texttt{| S5 | 1.119 | 1.361 | 0.964 | 0.808 | 0.378 |}\\
 
 #### Panel E: UMD Loading (u\_umd)
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
 \texttt{| --- | --- | --- | --- | --- | --- |}\\
-\texttt{| S1 | 0.0110 | -0.0731 | -0.0067 | 0.1780 | 0.0238 |}\\
-\texttt{| S2 | -0.0429 | 0.0237 | -0.0470 | -0.0093 | 0.0919 |}\\
-\texttt{| S3 | 0.0243 | -0.0138 | -0.0141 | 0.0544 | -0.0040 |}\\
-\texttt{| S4 | 0.1871 | -0.0615 | -0.1777 | 0.0144 | -0.0651 |}\\
-\texttt{| S5 | 0.0932 | 0.0653 | 0.0281 | -0.0269 | -0.0134 |}\\
+\texttt{| S1 | -0.0162 | -0.2083 | -0.0570 | 0.2018 | 0.0157 |}\\
+\texttt{| S2 | -0.1849 | 0.1190 | -0.1538 | 0.0180 | 0.3128 |}\\
+\texttt{| S3 | 0.0412 | -0.0715 | -0.0903 | 0.2596 | 0.0227 |}\\
+\texttt{| S4 | 0.5211 | -0.1790 | -0.6010 | -0.0924 | -0.1658 |}\\
+\texttt{| S5 | 0.1718 | 0.1671 | 0.1505 | -0.1511 | -0.0510 |}\\
 
 #### Panel F: t-statistic for UMD Loading
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
 \texttt{| --- | --- | --- | --- | --- | --- |}\\
-\texttt{| S1 | 0.326 | -1.789 | -0.131 | 2.380 | 0.573 |}\\
-\texttt{| S2 | -1.735 | 0.538 | -1.071 | -0.304 | 1.439 |}\\
-\texttt{| S3 | 0.601 | -0.558 | -0.237 | 0.802 | -0.113 |}\\
-\texttt{| S4 | 2.291 | -1.002 | -1.571 | 0.303 | -1.485 |}\\
-\texttt{| S5 | 3.677 | 1.266 | 0.533 | -0.686 | -0.385 |}\\
+\texttt{| S1 | -0.211 | -2.502 | -0.772 | 2.780 | 0.251 |}\\
+\texttt{| S2 | -3.673 | 1.027 | -1.821 | 0.286 | 2.298 |}\\
+\texttt{| S3 | 0.784 | -1.803 | -0.773 | 1.959 | 0.358 |}\\
+\texttt{| S4 | 3.450 | -1.417 | -3.102 | -1.078 | -2.383 |}\\
+\texttt{| S5 | 3.440 | 1.753 | 1.467 | -2.415 | -0.836 |}\\
 
 #### Panel G: R-squared (FF3)
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
@@ -147,17 +167,17 @@ Note: Event-time returns are equal-weighted Buy-Sell decile spreads formed with 
 #### Panel H: R-squared (FF4)
 \texttt{| Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |}\\
 \texttt{| --- | --- | --- | --- | --- | --- |}\\
-\texttt{| S1 | 0.947 | 0.930 | 0.920 | 0.894 | 0.916 |}\\
-\texttt{| S2 | 0.937 | 0.905 | 0.924 | 0.952 | 0.872 |}\\
-\texttt{| S3 | 0.938 | 0.940 | 0.914 | 0.837 | 0.938 |}\\
-\texttt{| S4 | 0.811 | 0.864 | 0.810 | 0.889 | 0.898 |}\\
-\texttt{| S5 | 0.945 | 0.851 | 0.853 | 0.890 | 0.926 |}\\
+\texttt{| S1 | 0.947 | 0.933 | 0.920 | 0.888 | 0.916 |}\\
+\texttt{| S2 | 0.941 | 0.908 | 0.926 | 0.952 | 0.887 |}\\
+\texttt{| S3 | 0.938 | 0.941 | 0.915 | 0.851 | 0.938 |}\\
+\texttt{| S4 | 0.847 | 0.867 | 0.861 | 0.890 | 0.900 |}\\
+\texttt{| S5 | 0.945 | 0.857 | 0.858 | 0.893 | 0.926 |}\\
 
 \subsection*{Table 9c (FF4-aligned): Alpha Diagnostics Comparison (FF3 vs FF4)}
 \texttt{| Metric | FF3 | FF4 | Improvement |}\\
 \texttt{| --- | --- | --- | --- |}\\
-\texttt{| mean\_absolute\_alpha\_pct | 0.211 | 0.206 | -0.006 |}\\
-\texttt{| rmse\_alpha\_pct | 0.290 | 0.268 | -0.022 |}\\
+\texttt{| mean\_absolute\_alpha\_pct | 0.211 | 0.215 | 0.004 |}\\
+\texttt{| rmse\_alpha\_pct | 0.290 | 0.293 | 0.002 |}\\
 \texttt{| n\_significant\_5pct | 4.000 | 4.000 | 0.000 |}\\
 \texttt{| n\_significant\_1pct | 2.000 | 2.000 | 0.000 |}\\
-\texttt{| mean\_r2 | 0.897 | 0.900 | 0.003 |}\\
+\texttt{| mean\_r2 | 0.897 | 0.906 | 0.008 |}\\

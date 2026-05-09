@@ -968,9 +968,11 @@ The current implementation follows a two-layer protocol:
    - `skip = 1` month
 
 2. **Benchmark used for FF4 factor construction**  
-   The operational benchmark is now:
-   - `J = 12`, `K = 1`, `skip = 1`
-   This is chosen a priori for implementation consistency and comparability, not by in-sample top-rank selection.
+   The operational benchmark in the current run is:
+   - `J = 12`, `K = 3`, `skip = 1`
+   - Carhart-style 2x3 UMD construction:
+     - `UMD = 0.5*(Small High + Big High) - 0.5*(Small Low + Big Low)`
+   This is chosen as a pre-specified operational choice after robustness checks, not by in-sample top-rank optimization of one objective.
 
 3. **Momentum score at formation month `f`**  
    For each stock, score is cumulative return over the lagged `J`-month window with one-month skip:
@@ -996,7 +998,7 @@ The current implementation follows a two-layer protocol:
 7. **FF4 construction and model tests**  
    Final factor set:
    - `MKT_RF`, `SMB`, `HML` (from FF3 pipeline)
-   - `UMD` (benchmark `12/1`)
+   - `UMD` (benchmark `12/3`, Carhart 2x3)
 
    FF3 and FF4 are estimated on the same 25 size-BM test portfolios with Newey-West (`lag=12`) inference.
 
@@ -1013,7 +1015,7 @@ The current implementation follows a two-layer protocol:
   - drawdown `DD_t = (W_t - peak_t)/peak_t`
   - bounded in `[-1, 0]`
 
-### 18.4 Momentum Findings (Current Run: Benchmark `12/1`)
+### 18.4 Momentum Findings (Current Run: Carhart 2x3, Benchmark `12/3`)
 
 From:
 - `output_ff1993_momentum/academic_tables_momentum.md`
@@ -1021,31 +1023,36 @@ From:
 
 Key findings:
 
-1. **Grid evidence shows multiple positive medium-horizon strategies**  
-   - Top t-stat strategy in the grid is `9/6` (`t ≈ 1.759`, Sharpe `≈ 0.077`)  
-   - Benchmark `12/1` is also positive (`mean ≈ 0.760%`, `t ≈ 1.713`, Sharpe `≈ 0.085`)
+1. **Grid evidence and robustness role are separated from operational factor choice**  
+   - The JT-style grid still reports multiple positive decile-WML combinations (e.g., `9/6`, `12/1`).
+   - The selected FF4 operational variant here is `carhart_2x3`, value-weighted, 30/70 breakpoints, `12/3`.
 
-2. **Operational UMD (`12/1`) is economically positive with moderate significance**  
+2. **Operational UMD (`12/3`, Carhart 2x3) is economically weak in the full sample**  
    From `ff4_factor_summary.csv`:
-   - `UMD mean = 0.760%` monthly
-   - `UMD std = 8.929%`
-   - `NW t-stat = 1.713`
-   - `% positive months = 57.214%`
+   - `UMD mean = -0.177%` monthly
+   - `UMD std = 5.863%`
+   - `NW t-stat = -0.775`
+   - `% positive months = 49.254%`
 
-3. **FF4 fit improves modestly relative to FF3**  
+3. **FF4 fit is mixed versus FF3 under this specification**  
    From `table_alpha_comparison.csv`:
-   - `MAE(alpha)`: `0.2115% -> 0.2059%` (improvement `-0.0056%`)
-   - `RMSE(alpha)`: `0.2901% -> 0.2679%` (improvement `-0.0222%`)
-   - `mean R^2`: `0.8973 -> 0.8999` (improvement `+0.0025`)
+   - `MAE(alpha)`: `0.2115% -> 0.2153%` (change `+0.0038%`)
+   - `RMSE(alpha)`: `0.2901% -> 0.2925%` (change `+0.0024%`)
+   - `mean R^2`: `0.8973 -> 0.9058` (improvement `+0.0084`)
    - significant-alpha counts are unchanged (`4` at 5%, `2` at 1%)
 
-4. **Event-time evidence (Table M2) suggests short-lived continuation and later reversal**  
+4. **At the 10% alpha threshold, the selected variant is acceptable but not dominant**  
+   Using `|t(alpha)| >= 1.65` as a 10% cutoff:
+   - selected `carhart_2x3 | value_weighted | 30/70 | 12/3` yields `6/25` significant alphas
+   - decile-WML variants are lower at `5/25`, so selected Carhart variant is chosen for construction comparability rather than best alpha minimization
+
+5. **Event-time evidence (Table M2) suggests short-lived continuation and later reversal**  
    - Early event months are mildly positive
    - The cumulative event-time spread turns negative and declines by longer horizons (`t=1...36`)
    - Interpretation: momentum is present in short horizons but not strongly persistent over longer event time in this sample.
 
-5. **Overall interpretation**
-   - Momentum adds useful information and slightly improves model fit, but it is not a dominant standalone pricing force.
+6. **Overall interpretation**
+   - Under Carhart 2x3 (`12/3`) in this sample, momentum is not a strong standalone premium, though it adds some time-series fit (`R^2`) in FF4.
    - The broad project-wide pattern remains strongest for size-related effects.
 
 ### 18.5 Momentum Output Files
