@@ -28,7 +28,7 @@ This design allows a direct extension test: same test assets, same inference fra
 
 ## 4. Results
 
-The momentum optimization results show that medium-term momentum exists economically in the China sample, though statistical strength is moderate rather than overwhelming. In the selected strategy (`9/6`), mean `UMD` is **0.559% per month** with a Newey-West t-stat of **1.759** and Sharpe of **0.077**. The winner and loser legs average **1.440%** and **0.881%** per month, respectively, yielding a stable positive spread. Other top candidates are close: `12/1` (mean `0.760%`, t=`1.713`) and `6/6` (mean `0.458%`, t=`1.591`).
+The momentum optimization table is treated as grid evidence rather than an in-sample optimizer, consistent with a Jegadeesh-Titman style reporting approach. The emphasis is on whether momentum remains positive across a range of conventional `J/K` specifications, not on selecting a single in-sample winner. Several medium-horizon designs produce positive spreads. For FF4 construction, the benchmark strategy is pre-specified as `12/3`. Under this benchmark, mean `UMD` is **0.594% per month** with a Newey-West t-stat of **1.429** and Sharpe of **0.071**; winner and loser legs average **1.624%** and **1.030%**, respectively.
 
 Factor-level evidence suggests `UMD` is not a simple duplicate of existing FF3 factors. In the FF4 summary table, `UMD` has mean **0.559%**, standard deviation **7.230%**, t-stat **1.759**, and positive-month frequency **53.98%**. Correlations indicate low overlap with market and value factors (`corr(UMD, MKT_RF)=0.020`, `corr(UMD, HML)=0.004`), while interaction with size is moderate and negative (`corr(UMD, SMB)=-0.258`). This pattern supports incremental information rather than near-collinearity.
 

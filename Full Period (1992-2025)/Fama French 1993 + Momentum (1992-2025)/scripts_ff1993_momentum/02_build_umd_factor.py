@@ -18,9 +18,13 @@ def main():
     opt_file = cfg.OUTPUT_DIR / "momentum_optimization.csv"
     with open(opt_file, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
-    best = rows[0]
-    j = int(best["J"])
-    k = int(best["K"])
+    by_strategy = {r["strategy"]: r for r in rows}
+    benchmark_key = f"{cfg.MOM_BENCHMARK_J}/{cfg.MOM_BENCHMARK_K}"
+    chosen = by_strategy.get(benchmark_key)
+    if chosen is None:
+        raise RuntimeError(f"Benchmark strategy {benchmark_key} not found in momentum_optimization.csv")
+    j = int(chosen["J"])
+    k = int(chosen["K"])
 
     months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
     stock_ret, stock_size, _, by_month_stocks = load_stock_panel()
@@ -49,29 +53,37 @@ def main():
         w.writerows(out_rows)
 
     rationale = cfg.OUTPUT_DIR / "momentum_selection_rationale.md"
-    top3 = rows[:3]
     lines = [
-        "## Optimal Momentum Strategy Selection",
+        "## Momentum Strategy Protocol (Jegadeesh-Titman style)",
         "",
         "### Candidate strategies considered:",
-        "- " + ", ".join(r["strategy"] for r in rows),
+        "- " + ", ".join(f"{a}/{b}" for a, b in cfg.MOM_STRATEGIES),
         "",
-        "### Top 3 performing strategies:",
+        "### Grid evidence (reported, not optimized):",
     ]
+    top3 = sorted(
+        rows,
+        key=lambda r: (-(to_float(r["nw12_tstat"]) or -999), -(to_float(r["mean_umd_pct"]) or -999)),
+    )[:3]
     for i, r in enumerate(top3, start=1):
         lines.append(
             f"{i}. {r['strategy']} - t={to_float(r['nw12_tstat']):.3f}, Sharpe={to_float(r['sharpe']):.3f}"
         )
     lines += [
         "",
-        f"### Selected strategy: {best['strategy']}",
+        "### Robustness principle:",
+        "- Following Jegadeesh-Titman style practice, momentum is evaluated on a standard J/K grid and interpreted by the pattern across strategies.",
+        "- We do not claim a uniquely optimal in-sample strategy from this table.",
+        "",
+        f"### Benchmark strategy used for FF4: {benchmark_key}",
         "",
         "### Rationale:",
-        "- Selected by best composite ranking using Sharpe, t-stat, mean return, and drawdown.",
-        "- Uses monthly overlapping portfolio implementation to reduce horizon mismatch.",
-        "- China A-share momentum appears strongest under this formation/holding pair in-sample.",
+        "- We report the full J/K grid and emphasize robustness across specifications.",
+        "- A pre-specified benchmark is used only as an operational input to build a single FF4 factor series.",
+        "- For FF4 construction, we use a pre-specified benchmark momentum strategy.",
+        "- This separates model evaluation from in-sample strategy tuning.",
         "",
-        "### Implementation details for selected strategy:",
+        "### Implementation details for benchmark strategy:",
         f"- Formation period: {j} months",
         f"- Holding period: {k} months",
         f"- Skip month: {cfg.MOM_SKIP_MONTH} (t-1)",

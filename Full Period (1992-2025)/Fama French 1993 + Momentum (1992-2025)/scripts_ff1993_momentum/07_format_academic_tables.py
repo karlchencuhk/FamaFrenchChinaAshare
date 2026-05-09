@@ -2,6 +2,14 @@ import csv
 import importlib.util
 from pathlib import Path
 
+from momentum_utils import (
+    compute_momentum_scores,
+    equal_weighted_return,
+    load_stock_panel,
+    mean,
+    pick_winners_losers,
+)
+
 _cfg_path = Path(__file__).with_name("00_config.py")
 _spec = importlib.util.spec_from_file_location("cfg", _cfg_path)
 cfg = importlib.util.module_from_spec(_spec)
@@ -47,7 +55,11 @@ def table_momentum_opt():
                 f3(r["avg_loser_return_pct"]),
             ]
         )
-    return "## Table M1 (Momentum): Strategy Optimization\n" + md_table(headers, body)
+    return (
+        "## Table M1 (Momentum): Strategy Grid Evidence\n"
+        + md_table(headers, body)
+        + "\n\nNote: Consistent with Jegadeesh-Titman style reporting, the J/K grid is presented for robustness across specifications."
+    )
 
 
 def table_factor_summary():
@@ -63,6 +75,53 @@ def table_factor_summary():
         + md_table(h1, b1)
         + "\n\n## Table 2 (FF4-aligned): Factor Correlation Matrix\n"
         + md_table(h2, b2)
+    )
+
+
+def table_event_time_performance():
+    # JT-style event-time performance profile: average Buy-Sell return at t=1..36 after formation.
+    horizon = 36
+    j = int(cfg.MOM_BENCHMARK_J)
+    skip = int(cfg.MOM_SKIP_MONTH)
+
+    stock_ret, _, _, by_month_stocks = load_stock_panel()
+    formation_months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
+    event_buckets = {t: [] for t in range(1, horizon + 1)}
+
+    for f_m in formation_months:
+        scores = compute_momentum_scores(stock_ret, by_month_stocks, f_m, j, skip)
+        winners, losers = pick_winners_losers(scores, deciles=cfg.MOM_DECILES)
+        if not winners or not losers:
+            continue
+        f_i = cfg.month_to_int(f_m)
+        for t in range(1, horizon + 1):
+            m_t = cfg.int_to_month(f_i + t)
+            if cfg.month_to_int(m_t) > cfg.month_to_int(cfg.RETURN_END):
+                continue
+            wr = equal_weighted_return(winners, m_t, stock_ret)
+            lr = equal_weighted_return(losers, m_t, stock_ret)
+            if wr is None or lr is None:
+                continue
+            event_buckets[t].append(wr - lr)
+
+    avg_by_t = {t: mean(event_buckets[t]) for t in range(1, horizon + 1)}
+    cum = 1.0
+    body = []
+    for t in range(1, horizon + 1):
+        r = avg_by_t[t]
+        if r is None:
+            monthly = ""
+            cumulative = ""
+        else:
+            cum *= (1.0 + r)
+            monthly = f3(r * 100.0)
+            cumulative = f3((cum - 1.0) * 100.0)
+        body.append([str(t), monthly, cumulative])
+
+    return (
+        "## Table M2 (Momentum): Performance of Relative Strength Portfolios in Event Time\n"
+        + md_table(["Month (t)", "Monthly Return (%)", "Cumulative Return (%)"], body)
+        + "\n\nNote: Event-time returns are equal-weighted Buy-Sell decile spreads formed with J=12 and skip=1; t=1..36 months after formation."
     )
 
 
@@ -136,6 +195,8 @@ def main():
         "# FF4-Aligned Tables (Full Period, Stock-side focus)",
         "",
         table_momentum_opt(),
+        "",
+        table_event_time_performance(),
         "",
         table_factor_summary(),
         "",

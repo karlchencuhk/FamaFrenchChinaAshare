@@ -17,22 +17,6 @@ cfg = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(cfg)
 
 
-def rank_desc(values):
-    pairs = sorted(enumerate(values), key=lambda x: (x[1] is None, -(x[1] or -1e99)))
-    out = [0] * len(values)
-    for i, (idx, _) in enumerate(pairs, start=1):
-        out[idx] = i
-    return out
-
-
-def rank_asc(values):
-    pairs = sorted(enumerate(values), key=lambda x: (x[1] is None, x[1] if x[1] is not None else 1e99))
-    out = [0] * len(values)
-    for i, (idx, _) in enumerate(pairs, start=1):
-        out[idx] = i
-    return out
-
-
 def main():
     months = cfg.all_months(cfg.RETURN_START, cfg.RETURN_END)
     stock_ret, stock_size, _, by_month_stocks = load_stock_panel()
@@ -69,14 +53,8 @@ def main():
             }
         )
 
-    sharpe_rank = rank_desc([r["sharpe"] for r in rows])
-    t_rank = rank_desc([r["nw12_tstat"] for r in rows])
-    mean_rank = rank_desc([r["mean_umd_pct"] for r in rows])
-    dd_rank = rank_asc([r["max_drawdown_pct"] for r in rows])
-    for i, r in enumerate(rows):
-        r["composite_score"] = 0.3 * sharpe_rank[i] + 0.3 * t_rank[i] + 0.2 * mean_rank[i] - 0.2 * dd_rank[i]
-
-    rows.sort(key=lambda x: (x["composite_score"], -(x["nw12_tstat"] or -999)))
+    # Titman-style reporting: keep the predefined strategy grid order.
+    # No in-sample "best strategy" optimization score is used here.
 
     out = cfg.OUTPUT_DIR / "momentum_optimization.csv"
     with open(out, "w", newline="", encoding="utf-8") as f:
