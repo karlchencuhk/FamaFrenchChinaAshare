@@ -1,6 +1,6 @@
 # FF4-Aligned Tables (Full Period, Stock-side focus)
 
-> **Annotated copy** of `academic_tables_momentum.md`. After **Table M3**, the row **Carhart 2×3 · 12/1 · value-weighted · 30/70** is spelled out in a dedicated subsection.
+> **J/K = 12/1 (operational benchmark).** All tables match a full pipeline run with `MOM_BENCHMARK_J = 12`, `MOM_BENCHMARK_K = 1`, `MOM_SKIP_MONTH = 1`, Carhart 2×3 UMD, value-weighted formation, and 30/70 momentum breakpoints. The default report `academic_tables_momentum.md` in this repository uses **J/K = 12/3** (`MOM_BENCHMARK_K = 3`).
 
 ## Table M1 (Momentum): Strategy Grid Evidence
 | Strategy | Mean UMD (%) | t-stat | Sharpe | Positive % | Max DD (%) | Winner (%) | Loser (%) |
@@ -66,6 +66,10 @@ Note: Event-time returns are equal-weighted Buy-Sell decile spreads formed with 
 ## Table M3 (Momentum): Construction and Robustness Variants
 | Construction | Weighting | Breakpoints | J/K | Mean UMD (%) | t-stat | Sharpe | Positive % | Max DD (%) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| decile_wml | value_weighted | 10/90 | 12/1 | 0.760 | 1.713 | 0.085 | 57.214 | -82.006 |
+| decile_wml | equal_weighted | 10/90 | 12/1 | -0.091 | -0.215 | -0.011 | 48.010 | -94.871 |
+| decile_wml | value_weighted | 10/90 | 12/3 | 0.594 | 1.429 | 0.071 | 55.224 | -82.989 |
+| decile_wml | equal_weighted | 10/90 | 12/3 | 0.226 | 0.554 | 0.028 | 49.751 | -86.250 |
 | carhart_2x3 | value_weighted | 30/70 | 12/1 | -0.597 | -2.645 | -0.097 | 46.269 | -98.091 |
 | carhart_2x3 | equal_weighted | 30/70 | 12/1 | -0.754 | -3.446 | -0.126 | 44.030 | -98.906 |
 | carhart_2x3 | value_weighted | 20/80 | 12/1 | -0.896 | -3.109 | -0.125 | 45.771 | -99.854 |
@@ -77,30 +81,7 @@ Note: Event-time returns are equal-weighted Buy-Sell decile spreads formed with 
 
 Note: Variants include requested side-by-side checks for 2x3 vs decile WML, value- vs equal-weighting, 30/70 vs 20/80 momentum breakpoints, and benchmark horizons 12/1 and 12/3.
 
-Selected operational variant for FF4 in this run: carhart_2x3, value_weighted, 30/70 breakpoints, J/K=12/3.
-
----
-
-### Marked output: Table M3 — Carhart 2×3 (12/1, value-weighted, 30/70 momentum breakpoints)
-
-**Specification**
-
-- Construction: `carhart_2x3` — `UMD = ½(Small High + Big High) − ½(Small Low + Big Low)`
-- Formation / holding: `J/K = 12/1` (pipeline `skip = 1`)
-- Weighting: value-weighted (formation-month ME weights)
-- Momentum breakpoints: 30th / 70th percentiles (independent of size median)
-
-**Numbers** (first data row of Table M3 above)
-
-| Metric | Value |
-| --- | --- |
-| Mean UMD (%) | -0.597 |
-| NW t-stat (lag 12) | -2.645 |
-| Sharpe | -0.097 |
-| Positive months (%) | 46.269 |
-| Max drawdown (%) | -98.091 |
-
----
+Selected operational variant for FF4 in this run: carhart_2x3, value_weighted, 30/70 breakpoints, J/K=12/1.
 
 ## Table 2 (FF4-aligned): Factor Summary Including Momentum
 | Factor | Mean (%) | Std (%) | t-stat | Sharpe | Min (%) | Max (%) | % Positive |
@@ -108,15 +89,15 @@ Selected operational variant for FF4 in this run: carhart_2x3, value_weighted, 3
 | MKT_RF | 0.674 | 10.627 | 1.337 | 0.063 | -28.668 | 119.088 | 51.244 |
 | SMB | 0.860 | 5.416 | 3.121 | 0.159 | -17.453 | 25.984 | 55.970 |
 | HML | 0.417 | 5.018 | 1.644 | 0.083 | -30.021 | 28.917 | 55.224 |
-| UMD | -0.177 | 5.863 | -0.775 | -0.030 | -64.313 | 28.005 | 49.254 |
+| UMD | -0.597 | 6.161 | -2.645 | -0.097 | -64.441 | 26.391 | 46.269 |
 
 ## Table 2 (FF4-aligned): Factor Correlation Matrix
 | Factor | MKT_RF | SMB | HML | UMD |
 | --- | --- | --- | --- | --- |
-| MKT_RF | 1.000 | 0.332 | -0.235 | -0.003 |
-| SMB | 0.332 | 1.000 | -0.224 | -0.258 |
-| HML | -0.235 | -0.224 | 1.000 | 0.172 |
-| UMD | -0.003 | -0.258 | 0.172 | 1.000 |
+| MKT_RF | 1.000 | 0.332 | -0.235 | -0.170 |
+| SMB | 0.332 | 1.000 | -0.224 | -0.342 |
+| HML | -0.235 | -0.224 | 1.000 | 0.288 |
+| UMD | -0.170 | -0.342 | 0.288 | 1.000 |
 
 ## Table 6a (FF4-aligned): Stock Regressions on MKT_RF, SMB, HML, UMD
 
@@ -141,38 +122,38 @@ Selected operational variant for FF4 in this run: carhart_2x3, value_weighted, 3
 #### Panel C: FF4 Alpha (%)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
-| S1 | 0.250 | 0.450 | 0.428 | 0.928 | 0.467 |
-| S2 | -0.201 | 0.421 | 0.019 | 0.020 | 0.159 |
-| S3 | -0.211 | -0.183 | 0.032 | 0.042 | -0.167 |
-| S4 | 0.038 | -0.106 | -0.015 | -0.184 | -0.171 |
-| S5 | 0.184 | 0.262 | 0.215 | 0.177 | 0.051 |
+| S1 | 0.186 | 0.413 | 0.421 | 1.010 | 0.479 |
+| S2 | -0.256 | 0.466 | 0.012 | 0.018 | 0.259 |
+| S3 | -0.215 | -0.192 | 0.028 | 0.128 | -0.172 |
+| S4 | 0.204 | -0.116 | -0.196 | -0.154 | -0.202 |
+| S5 | 0.208 | 0.341 | 0.267 | 0.129 | -0.002 |
 
 #### Panel D: t-statistic for FF4 Alpha
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
-| S1 | 1.377 | 2.896 | 2.342 | 3.241 | 1.996 |
-| S2 | -1.681 | 1.898 | 0.106 | 0.160 | 0.943 |
-| S3 | -1.542 | -1.123 | 0.179 | 0.232 | -1.330 |
-| S4 | 0.198 | -0.576 | -0.063 | -1.100 | -1.180 |
-| S5 | 1.119 | 1.361 | 0.964 | 0.808 | 0.378 |
+| S1 | 1.105 | 2.456 | 2.154 | 3.423 | 2.019 |
+| S2 | -2.150 | 1.915 | 0.067 | 0.137 | 1.425 |
+| S3 | -1.573 | -1.154 | 0.140 | 0.661 | -1.274 |
+| S4 | 0.941 | -0.622 | -0.798 | -0.911 | -1.361 |
+| S5 | 1.231 | 1.752 | 1.140 | 0.607 | -0.014 |
 
 #### Panel E: UMD Loading (u_umd)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
-| S1 | -0.0162 | -0.2083 | -0.0570 | 0.2018 | 0.0157 |
-| S2 | -0.1849 | 0.1190 | -0.1538 | 0.0180 | 0.3128 |
-| S3 | 0.0412 | -0.0715 | -0.0903 | 0.2596 | 0.0227 |
-| S4 | 0.5211 | -0.1790 | -0.6010 | -0.0924 | -0.1658 |
-| S5 | 0.1718 | 0.1671 | 0.1505 | -0.1511 | -0.0510 |
+| S1 | -0.1315 | -0.1069 | -0.0243 | 0.2135 | 0.0309 |
+| S2 | -0.1435 | 0.1188 | -0.0333 | -0.0027 | 0.2691 |
+| S3 | -0.0053 | -0.0272 | -0.0213 | 0.2302 | -0.0072 |
+| S4 | 0.4458 | -0.0429 | -0.4901 | 0.0448 | -0.0901 |
+| S5 | 0.0761 | 0.1973 | 0.1394 | -0.1260 | -0.1224 |
 
 #### Panel F: t-statistic for UMD Loading
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
-| S1 | -0.211 | -2.502 | -0.772 | 2.780 | 0.251 |
-| S2 | -3.673 | 1.027 | -1.821 | 0.286 | 2.298 |
-| S3 | 0.784 | -1.803 | -0.773 | 1.959 | 0.358 |
-| S4 | 3.450 | -1.417 | -3.102 | -1.078 | -2.383 |
-| S5 | 3.440 | 1.753 | 1.467 | -2.415 | -0.836 |
+| S1 | -3.486 | -1.738 | -0.411 | 3.288 | 0.682 |
+| S2 | -3.006 | 1.126 | -0.681 | -0.045 | 2.153 |
+| S3 | -0.093 | -0.683 | -0.235 | 1.937 | -0.114 |
+| S4 | 3.057 | -0.599 | -2.273 | 0.726 | -1.439 |
+| S5 | 1.864 | 2.547 | 1.513 | -2.433 | -2.387 |
 
 #### Panel G: R-squared (FF3)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
@@ -186,17 +167,17 @@ Selected operational variant for FF4 in this run: carhart_2x3, value_weighted, 3
 #### Panel H: R-squared (FF4)
 | Size\BM | BM1 | BM2 | BM3 | BM4 | BM5 |
 | --- | --- | --- | --- | --- | --- |
-| S1 | 0.947 | 0.933 | 0.920 | 0.888 | 0.916 |
-| S2 | 0.941 | 0.908 | 0.926 | 0.952 | 0.887 |
-| S3 | 0.938 | 0.941 | 0.915 | 0.851 | 0.938 |
-| S4 | 0.847 | 0.867 | 0.861 | 0.890 | 0.900 |
-| S5 | 0.945 | 0.857 | 0.858 | 0.893 | 0.926 |
+| S1 | 0.948 | 0.929 | 0.920 | 0.889 | 0.916 |
+| S2 | 0.939 | 0.908 | 0.923 | 0.951 | 0.882 |
+| S3 | 0.937 | 0.940 | 0.914 | 0.848 | 0.938 |
+| S4 | 0.834 | 0.862 | 0.841 | 0.889 | 0.897 |
+| S5 | 0.942 | 0.860 | 0.858 | 0.892 | 0.928 |
 
 ## Table 9c (FF4-aligned): Alpha Diagnostics Comparison (FF3 vs FF4)
 | Metric | FF3 | FF4 | Improvement |
 | --- | --- | --- | --- |
-| mean_absolute_alpha_pct | 0.211 | 0.215 | 0.004 |
-| rmse_alpha_pct | 0.290 | 0.293 | 0.002 |
-| n_significant_5pct | 4.000 | 4.000 | 0.000 |
-| n_significant_1pct | 2.000 | 2.000 | 0.000 |
-| mean_r2 | 0.897 | 0.906 | 0.008 |
+| mean_absolute_alpha_pct | 0.211 | 0.243 | 0.031 |
+| rmse_alpha_pct | 0.290 | 0.317 | 0.027 |
+| n_significant_5pct | 4.000 | 5.000 | 1.000 |
+| n_significant_1pct | 2.000 | 1.000 | -1.000 |
+| mean_r2 | 0.897 | 0.903 | 0.006 |

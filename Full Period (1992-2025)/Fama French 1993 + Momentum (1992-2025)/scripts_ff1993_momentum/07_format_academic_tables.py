@@ -102,7 +102,7 @@ def table_robustness_variants():
         "## Table M3 (Momentum): Construction and Robustness Variants\n"
         + md_table(headers, body)
         + "\n\nNote: Variants include requested side-by-side checks for 2x3 vs decile WML, value- vs equal-weighting, 30/70 vs 20/80 momentum breakpoints, and benchmark horizons 12/1 and 12/3."
-        + "\n\nSelected operational variant for FF4 in this run: carhart_2x3, value_weighted, 30/70 breakpoints, J/K=12/3."
+        + f"\n\nSelected operational variant for FF4 in this run: carhart_2x3, value_weighted, 30/70 breakpoints, J/K={cfg.MOM_BENCHMARK_J}/{cfg.MOM_BENCHMARK_K}."
     )
 
 
